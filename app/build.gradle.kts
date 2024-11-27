@@ -93,4 +93,11 @@ dependencies {
     implementation(libs.serialization.converter)
     implementation(libs.coil)
     implementation(libs.okhttp)
+    implementation(libs.accompanist)
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
+
+    implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
+
 }
