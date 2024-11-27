@@ -15,11 +15,7 @@
         android:theme="@style/Theme.MoodWise"
         tools:targetApi="31">
         <meta-data android:name="com.google.android.geo.API_KEY"
-<<<<<<< HEAD
             android:value="YOUR_KEY_HERE"/>
-=======
-            android:value="AIzaSyA4Gv0Th6AP45VrYTck5EjOvwauFub2kjw"/>
->>>>>>> c9e6d2e (Defining the android manifest.xml)
 
         <activity
             android:name=".MainActivity"
