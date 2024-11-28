@@ -18,10 +18,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,37 +62,54 @@ import com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.ait.moodwise.ui.screens.MapViewModel
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Timer
+import java.util.TimerTask
 
 @Composable
 fun WeatherDetails(viewModel: WeatherDetailsViewModel = hiltViewModel()) {
     val weatherUIState by remember { mutableStateOf(viewModel.weatherUIState) }
     val recommendedActivities = listOf("Swimming", "Beach Volleyball", "Hiking")
+//    viewModel.getWeatherDetails(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
 
+    LaunchedEffect(Unit){
+        viewModel.getWeatherDetails(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
+        viewModel.startPeriodicUpdates(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
+    }
+    DisposableEffect(Unit) {
+        val timer = Timer()
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                currentTime.value = System.currentTimeMillis()
+            }
+        }, 0, 60000) // Update every minute
 
-    // Fetch weather details when the composable is first displayed
-    LaunchedEffect(Unit) {
-        // Check if the weather details are already loaded or not
-        if (weatherUIState == WeatherUIState.Init) {
-            viewModel.getWeatherDetails(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
+        onDispose {
+            timer.cancel()
         }
     }
 
-
-    when (weatherUIState) {
+    when (viewModel.weatherUIState) {
         is WeatherUIState.Loading -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
+                CircularProgressIndicator()
                 Text(text = "Loading Weather Details...")
             }
         }
         is WeatherUIState.Success -> {
-            val weatherInfo = (weatherUIState as WeatherUIState.Success).weatherInfo
+//            val weatherInfo = (viewModel.weatherUIState as WeatherUIState.Success).weatherInfo
             WeatherDetailsContent(
-                weatherInfo = weatherInfo,
+                (viewModel.weatherUIState as WeatherUIState.Success).weatherInfo,
                 recommendedActivities = recommendedActivities
             )
+//            WeatherDetailsContent(
+//                weatherInfo = weatherInfo,
+//                recommendedActivities = recommendedActivities
+//            )
         }
         is WeatherUIState.Error -> {
             Box(
@@ -100,14 +119,14 @@ fun WeatherDetails(viewModel: WeatherDetailsViewModel = hiltViewModel()) {
                 Text(text = "Failed to load weather details. Please try again.")
             }
         }
-        else -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Welcome! Fetching your weather info.")
-            }
-        }
+//        else -> {
+//            Box(
+//                modifier = Modifier.fillMaxSize(),
+//                contentAlignment = Alignment.Center
+//            ) {
+//                Text(text = "Welcome! Fetching your weather info.")
+//            }
+//        }
     }
 }
 
@@ -130,7 +149,7 @@ fun WeatherDetailsContent(
                 style = MaterialTheme.typography.headlineMedium
             )
             Text(
-                text = "Timezone: UTC ${weatherInfo.timezone / 3600}\nID: ${weatherInfo.id}", // Dynamic details
+                text = "Timezone: UTC ${SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(weatherInfo.dt.toLong() * 1000) )}", // Dynamic details
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )

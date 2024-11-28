@@ -21,7 +21,7 @@ fun MainNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "map"
+        startDestination = "weather_details"
     ) {
         // Weather Details Screen
         composable(route = "weather_details") {

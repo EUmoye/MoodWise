@@ -1,5 +1,7 @@
 package com.ait.moodwise.ui.screens
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,30 +24,43 @@ class WeatherDetailsViewModel @Inject constructor(
     private val weatherAPI: WeatherAPI
 ) : ViewModel() {
 
-    var weatherUIState: WeatherUIState by mutableStateOf(WeatherUIState.Init)
+    var weatherUIState: WeatherUIState by mutableStateOf(WeatherUIState.Loading)
+
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateInterval = 60000L // 1 minute
 
     fun getWeatherDetails(cityCountry: String, apiKey: String) {
-        weatherUIState = WeatherUIState.Loading
         Log.d("WeatherDetailsViewModel", "Fetching weather details...") // Log added for debugging
         viewModelScope.launch {
-            weatherUIState = try {
+            weatherUIState = WeatherUIState.Loading
+            try {
                 val response = weatherAPI.getWeather(cityCountry, "metric", apiKey)
-                WeatherUIState.Success(response)
+                Log.d("the weather response", response.name)
+                weatherUIState = WeatherUIState.Success(response)
             } catch (e: IOException) {
-                WeatherUIState.Error
+                weatherUIState = WeatherUIState.Error
             } catch (e: HttpException) {
-                WeatherUIState.Error
+                weatherUIState = WeatherUIState.Error
             } catch (e: Exception) {
-                WeatherUIState.Error
+                weatherUIState = WeatherUIState.Error
             }
         }
+    }
+
+    fun startPeriodicUpdates(cityCountry: String, apiKey: String) {
+        handler.post(object : Runnable {
+            override fun run() {
+                getWeatherDetails(cityCountry, apiKey)
+                handler.postDelayed(this, updateInterval)
+            }
+        })
     }
 }
 
 
 
+
 sealed interface WeatherUIState {
-    object Init : WeatherUIState
     object Loading : WeatherUIState
     data class Success(val weatherInfo: weatherInfo) : WeatherUIState
     object Error : WeatherUIState

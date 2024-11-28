@@ -35,7 +35,8 @@ import kotlinx.coroutines.tasks.await
 @Composable
 fun MapAnimation(
     modifier: Modifier = Modifier,
-    mapViewModel: MapViewModel = hiltViewModel()
+    mapViewModel: MapViewModel = hiltViewModel(),
+//    onclick: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -108,5 +109,9 @@ fun MapAnimation(
                     mapType = if (isSatellite) MapType.SATELLITE else MapType.NORMAL
                 )
             })
+
+//        Button() {
+//            onclick
+//        }
     }
 }
