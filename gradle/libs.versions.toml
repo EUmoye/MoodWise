@@ -1,10 +1,13 @@
 [versions]
+accompanistPermissions = "0.31.2-alpha"
 agp = "8.6.0"
+dotenvKotlin = "6.2.2"
 kotlin = "2.0.10"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+kotlinxCoroutinesPlayServices = "1.6.0"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2024.04.01"
@@ -28,7 +31,9 @@ accompanist="0.33.2-alpha"
 playServicesLocation = "21.3.0"
 
 [libraries]
+accompanist-permissions-v0312alpha = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenvKotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -50,6 +55,7 @@ hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", ve
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
 hilt-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 retrofit = {group="com.squareup.retrofit2", name="retrofit", version.ref="retrofit"}
 kotlinx-serialization = {group="org.jetbrains.kotlinx", name="kotlinx-serialization-json", version.ref="kotlinxSerialization"}
 serialization-converter = {group="com.jakewharton.retrofit", name="retrofit2-kotlinx-serialization-converter", version.ref="serializationConverter"}

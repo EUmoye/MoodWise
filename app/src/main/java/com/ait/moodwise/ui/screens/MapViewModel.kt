@@ -8,10 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.ait.moodwise.location.LocationManager
 import javax.inject.Inject
 import com.google.android.gms.maps.model.LatLng
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 
 
-
+@HiltViewModel
 class MapViewModel @Inject constructor(
     val locationManager: LocationManager
 ): ViewModel() {

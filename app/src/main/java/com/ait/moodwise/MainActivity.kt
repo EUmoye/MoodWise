@@ -22,41 +22,48 @@ import com.ait.moodwise.ui.theme.MoodWiseTheme
 import io.github.cdimascio.dotenv.Dotenv
 import com.ait.moodwise.ui.screens.MoodTracker
 import com.ait.moodwise.ui.screens.WeatherDetails
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+//        enableEdgeToEdge()
         setContent {
+//            MoodWiseTheme {
+//                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+//                    NavGraph(
+//                        modifier = Modifier.padding(innerPadding)
+//                    )
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//@Composable
+//fun NavGraph(
+//    modifier: Modifier = Modifier,
+//    navController: NavHostController = rememberNavController(),
+//) {
+//    NavHost(
+//        modifier = modifier,
+//        navController = navController,
+//        startDestination = MainNavigation.MainScreen.route
+//    ) {
+//        // Main here is the root for the routing
+//        composable(MainNavigation.MainScreen.route) {
+//            WeatherDetails()
+//        }
+//
+//        composable(MainNavigation.MoodTracker.route) {
+//            MoodTracker()
+//        }
+//
+//    }
             MoodWiseTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    NavGraph(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainNavigation()
             }
         }
-    }
-}
-
-@Composable
-fun NavGraph(
-    modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
-) {
-    NavHost(
-        modifier = modifier,
-        navController = navController,
-        startDestination = MainNavigation.MainScreen.route
-    ) {
-        // Main here is the root for the routing
-        composable(MainNavigation.MainScreen.route) {
-            WeatherDetails()
-        }
-
-        composable(MainNavigation.MoodTracker.route) {
-            MoodTracker()
-        }
-
     }
 }

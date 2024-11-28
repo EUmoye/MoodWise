@@ -4,19 +4,37 @@ import android.Manifest
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -27,80 +45,215 @@ import com.google.accompanist.permissions.rememberPermissionState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import com.ait.moodwise.R
+import com.ait.moodwise.data.weather.weatherInfo
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.GoogleMap
+import com.google.android.gms.location.LocationServices.getFusedLocationProviderClient
+import com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.ait.moodwise.ui.screens.MapViewModel
+import kotlinx.coroutines.tasks.await
 
-
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun WeatherDetails(
-    modifier: Modifier = Modifier,
-    mapViewModel: MapViewModel = hiltViewModel()
-) {
-    val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-    var mapProperties by remember {
-        mutableStateOf(
-            MapProperties(
-                mapType = MapType.NORMAL,
-                isTrafficEnabled = true,
-//                mapStyleOptions = MapStyleOptions.loadRawResourceStyle(
-//                    context, R.raw.mymapconfig
-//                ),
-//                isMyLocationEnabled = true
-            )
-        )
-    }
-    Column {
-        val fineLocationPermissionState = rememberPermissionState(
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-        if (fineLocationPermissionState.status.isGranted) {
-            Column {
+fun WeatherDetails(viewModel: WeatherDetailsViewModel = hiltViewModel()) {
+    val weatherUIState by remember { mutableStateOf(viewModel.weatherUIState) }
+    val recommendedActivities = listOf("Swimming", "Beach Volleyball", "Hiking")
 
-                Button(onClick = {
-//                    mapViewModel.startLocationMonitoring()
-                }) {
-                    Text(text = "Start location monitoring")
-                }
+
+    // Fetch weather details when the composable is first displayed
+    LaunchedEffect(Unit) {
+        // Check if the weather details are already loaded or not
+        if (weatherUIState == WeatherUIState.Init) {
+            viewModel.getWeatherDetails(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
+        }
+    }
+
+
+    when (weatherUIState) {
+        is WeatherUIState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Loading Weather Details...")
+            }
+        }
+        is WeatherUIState.Success -> {
+            val weatherInfo = (weatherUIState as WeatherUIState.Success).weatherInfo
+            WeatherDetailsContent(
+                weatherInfo = weatherInfo,
+                recommendedActivities = recommendedActivities
+            )
+        }
+        is WeatherUIState.Error -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Failed to load weather details. Please try again.")
+            }
+        }
+        else -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Welcome! Fetching your weather info.")
+            }
+        }
+    }
+}
+
+@Composable
+fun WeatherDetailsContent(
+    weatherInfo: weatherInfo,
+    recommendedActivities: List<String>
+
+) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Top Section: City Name and Date/Time
+        Column(modifier = Modifier.padding(bottom = 16.dp)) {
+            Text(
+                text = weatherInfo.name,
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Text(
+                text = "Timezone: UTC ${weatherInfo.timezone / 3600}\nID: ${weatherInfo.id}", // Dynamic details
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+        }
+
+        // Weather Info Section
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Temperature
+            Column {
                 Text(
-                    text = "Location: "
-//                            "${getLocationText(mapViewModel.locationState.value)}"
+                    text = "${weatherInfo.main.temp}°C",
+                    style = MaterialTheme.typography.headlineLarge
+                )
+                Text(
+                    text = "Feels like ${weatherInfo.main.feelsLike}°C",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
                 )
             }
+            // Placeholder for weather icon
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(Color.LightGray, shape = CircleShape)
+            )
+        }
 
-        } else {
-            Column() {
-                val permissionText = if (fineLocationPermissionState.status.shouldShowRationale) {
-                    "Please consider giving permission"
-                }
-            else {
-                    "Give permission for location"
-                }
-                Text(text = permissionText)
-                Button(onClick = {
-                    fineLocationPermissionState.launchPermissionRequest()
-                }) {
-                    Text(text = "Request permission")
-                }
+        // City Description
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            shape = RoundedCornerShape(8.dp),
+//            backgroundColor = Color(0xFFF5F5DC)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "CITY DESCRIPTION",
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Text(
+                    text = "Cloudiness: ${weatherInfo.clouds.all}%",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = "Wind Speed: ${weatherInfo.wind.speed}m/s",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
 
+        // Stats Section
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(Color(0xFFF5F5DC), shape = RoundedCornerShape(8.dp))
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Humidity: ${weatherInfo.main.humidity}%", style = MaterialTheme.typography.bodySmall)
+            }
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(Color(0xFFF5F5DC), shape = RoundedCornerShape(8.dp))
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text ="Pressure: ${weatherInfo.main.pressure} hPa", style = MaterialTheme.typography.bodySmall)
+            }
+        }
 
-        var isSatellite by remember { mutableStateOf(false) }
-        Switch(checked = isSatellite,
-            onCheckedChange = {
-                isSatellite = it
-                mapProperties = mapProperties.copy(
-                    mapType = if (isSatellite) MapType.SATELLITE else MapType.NORMAL
-                )
-            })
-
-//        Text(text = geocodeText)
-
-
+        // Recommended Activities
+        Column {
+            Text(
+                text = "RECOMMENDED ACTIVITIES",
+                style = MaterialTheme.typography.labelMedium
+            )
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                items(recommendedActivities.size) {
+                    index ->  ActivityCard(activityName = recommendedActivities[index])
+                }
+            }
+        }
     }
 }
+
+// Reusable Activity Card
+@Composable
+fun ActivityCard(activityName: String) {
+    Card(
+        modifier = Modifier
+            .size(120.dp, 80.dp), // Adjust size as needed
+        shape = RoundedCornerShape(8.dp),
+//        backgroundColor = Color(0xFFF5F5DC)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = activityName,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+

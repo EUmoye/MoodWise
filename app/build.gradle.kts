@@ -98,6 +98,9 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
 
-    implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
+
+    implementation(libs.dotenv.kotlin)
+    implementation (libs.kotlinx.coroutines.play.services)
+    implementation(libs.accompanist.permissions.v0312alpha)
 
 }
