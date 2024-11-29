@@ -69,24 +69,16 @@ import java.util.TimerTask
 
 @Composable
 fun WeatherDetails(viewModel: WeatherDetailsViewModel = hiltViewModel()) {
-    val weatherUIState by remember { mutableStateOf(viewModel.weatherUIState) }
-    val recommendedActivities = listOf("Swimming", "Beach Volleyball", "Hiking")
-//    viewModel.getWeatherDetails(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
+    val currentTime = remember { mutableStateOf(System.currentTimeMillis()) }
 
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         viewModel.getWeatherDetails(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
         viewModel.startPeriodicUpdates(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
-    }
-    DisposableEffect(Unit) {
-        val timer = Timer()
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                currentTime.value = System.currentTimeMillis()
-            }
-        }, 0, 60000) // Update every minute
 
-        onDispose {
-            timer.cancel()
+        // Periodic time updates
+        while (true) {
+            currentTime.value = System.currentTimeMillis()
+            kotlinx.coroutines.delay(60000) // Update every minute
         }
     }
 
@@ -101,15 +93,11 @@ fun WeatherDetails(viewModel: WeatherDetailsViewModel = hiltViewModel()) {
             }
         }
         is WeatherUIState.Success -> {
-//            val weatherInfo = (viewModel.weatherUIState as WeatherUIState.Success).weatherInfo
             WeatherDetailsContent(
-                (viewModel.weatherUIState as WeatherUIState.Success).weatherInfo,
-                recommendedActivities = recommendedActivities
+                weatherInfo = (viewModel.weatherUIState as WeatherUIState.Success).weatherInfo,
+                recommendedActivities = listOf("Swimming", "Beach Volleyball", "Hiking"),
+                currentTime = currentTime.value
             )
-//            WeatherDetailsContent(
-//                weatherInfo = weatherInfo,
-//                recommendedActivities = recommendedActivities
-//            )
         }
         is WeatherUIState.Error -> {
             Box(
@@ -119,21 +107,15 @@ fun WeatherDetails(viewModel: WeatherDetailsViewModel = hiltViewModel()) {
                 Text(text = "Failed to load weather details. Please try again.")
             }
         }
-//        else -> {
-//            Box(
-//                modifier = Modifier.fillMaxSize(),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Text(text = "Welcome! Fetching your weather info.")
-//            }
-//        }
     }
 }
 
 @Composable
 fun WeatherDetailsContent(
     weatherInfo: weatherInfo,
-    recommendedActivities: List<String>
+    recommendedActivities: List<String>,
+    currentTime: Long
+
 
 ) {
 
@@ -149,7 +131,7 @@ fun WeatherDetailsContent(
                 style = MaterialTheme.typography.headlineMedium
             )
             Text(
-                text = "Timezone: UTC ${SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(weatherInfo.dt.toLong() * 1000) )}", // Dynamic details
+                text = "Local Time: ${SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(currentTime))}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
