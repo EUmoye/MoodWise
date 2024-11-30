@@ -4,13 +4,18 @@ import android.Manifest
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -30,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +53,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import com.ait.moodwise.R
+import com.ait.moodwise.data.activity.Activity
 import com.ait.moodwise.data.weather.weatherInfo
 import com.google.accompanist.permissions.shouldShowRationale
 import com.google.android.gms.maps.GoogleMap
@@ -116,8 +123,14 @@ fun WeatherDetailsContent(
     recommendedActivities: List<String>,
     currentTime: Long
 
-
 ) {
+
+//    val items = listOf(
+//        BottomNavItem("Home", ImageVector.vectorResource(id = R.drawable.ic_home), true),
+//        BottomNavItem("Weather", ImageVector.vectorResource(id = R.drawable.ic_weather), false),
+//        BottomNavItem("Activities", ImageVector.vectorResource(id = R.drawable.ic_activities), false)
+//    )
+    var isDetailsDialog by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -228,20 +241,80 @@ fun WeatherDetailsContent(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 items(recommendedActivities.size) {
-                    index ->  ActivityCard(activityName = recommendedActivities[index])
+                    index ->  ActivityCard(
+                    recommendedActivities[index],
+                        onClick = {
+                            isDetailsDialog = true
+                        }
+                    )
                 }
             }
         }
+        
+        if (isDetailsDialog) {
+            ShowActivitiesDetailsDialog(
+                onDismissRequest = {
+                    isDetailsDialog = false },
+            ) {
+
+            }
+        }
+            
+        }
     }
+
+@Composable
+fun ShowActivitiesDetailsDialog(
+    onDismissRequest: () -> Unit,
+    properties: Activity?= null,
+    content: () -> Unit) {
+    AnimatedVisibility(
+        visible = true,
+        enter = slideInVertically(initialOffsetY = { it }),
+        exit = slideOutVertically(targetOffsetY = { it })
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp), // Adjust height as needed
+//                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Activity Details",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Text(
+                    text = "Activity Name",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Text(
+                    text = "Activity Location"
+                )
+            }
+        }
+    }
+
 }
 
 // Reusable Activity Card
 @Composable
-fun ActivityCard(activityName: String) {
+fun ActivityCard(
+    activityName: String,
+    onClick: () -> Unit
+) {
+    
     Card(
         modifier = Modifier
-            .size(120.dp, 80.dp), // Adjust size as needed
+            .size(120.dp, 80.dp)
+            .clickable(onClick = onClick), // Adjust size as needed
         shape = RoundedCornerShape(8.dp),
+
 //        backgroundColor = Color(0xFFF5F5DC)
     ) {
         Box(
