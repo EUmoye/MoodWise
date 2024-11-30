@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ait.moodwise.ui.screens.MapAnimation
 import com.ait.moodwise.ui.screens.WeatherDetails
+import com.ait.moodwise.ui.screens.music.MusicScreen
 
 //sealed class MainNavigation(val route: String) {
 //    object MainScreen : MainNavigation("mainscreen")
@@ -21,7 +22,7 @@ fun MainNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "weather_details"
+        startDestination = "music"
     ) {
         // Weather Details Screen
         composable(route = "weather_details") {
@@ -32,5 +33,11 @@ fun MainNavigation() {
         composable(route = "map") {
             MapAnimation()
         }
+
+        // Music screen
+        composable(route = "music") {
+            MusicScreen()
+        }
+
     }
 }
