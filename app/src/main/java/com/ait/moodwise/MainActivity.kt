@@ -33,7 +33,7 @@ import com.ait.moodwise.ui.navigation.MainNavigation
 import com.ait.moodwise.ui.theme.MoodWiseTheme
 import io.github.cdimascio.dotenv.Dotenv
 import com.ait.moodwise.ui.screens.MoodTracker
-import com.ait.moodwise.ui.screens.WeatherDetails
+//import com.ait.moodwise.ui.screens.WeatherDetails
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
@@ -101,9 +101,8 @@ class MainActivity : ComponentActivity() {
                           }
                         }
                 }) {
-                    innerPadding ->
+//                    innerPadding ->
                     MainNavigation(navController = navController)
-
                 }
             }
         }

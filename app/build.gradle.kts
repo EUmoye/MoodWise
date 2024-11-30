@@ -104,4 +104,7 @@ dependencies {
     implementation (libs.kotlinx.coroutines.play.services)
     implementation(libs.accompanist.permissions.v0312alpha)
 
+    // GenAI
+    implementation(libs.generativeai)
+
 }

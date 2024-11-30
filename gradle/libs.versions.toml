@@ -30,8 +30,11 @@ playServicesMaps="18.2.0"
 accompanist="0.33.2-alpha"
 playServicesLocation = "21.3.0"
 uiTestAndroid = "1.7.2"
+generativeai = "0.2.0"
 
 [libraries]
+generativeai = {group = "com.google.ai.client.generativeai", name="generativeai", version.ref="generativeai"}
+
 accompanist-permissions-v0312alpha = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenvKotlin" }
