@@ -1,8 +1,11 @@
 package com.ait.moodwise.ui.screens
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.ait.moodwise.data.activity.Activities
+import com.ait.moodwise.data.activity.ActivitiesItem
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.serialization.json.Json
 
@@ -26,30 +29,45 @@ class GenAIViewModel: ViewModel() {
 //            }
 //        }
 //    }
-    suspend fun json_no_schema(){
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun json_no_schema(): List<ActivitiesItem>{
         val generativeModel =
             GenerativeModel(
                 // Specify a Gemini model appropriate for your use case
                 modelName = "gemini-1.5-flash",
                 // Access your API key as a Build Configuration variable (see "Set up your API key" above)
-                apiKey = "AIzaSyDVNZGkZjPOEqk76-1SfhJmYzxmiE0l4es",
             )
         var prompt = """
         Generate 6 activities for me to do in 10 degrees celius weather in Budapest using this JSON schema:
-        Activity = { 'name': 'String', 'location': string, 'descriptio'n: string }
+        [
+            { "name": "String", "location": "String", "description": "String" }
+        ]
     """.trimIndent()
 
         val response = generativeModel.generateContent(prompt)
-        print(response.text)
-        val activities = response.text?.let { parseActivities(it) }
-//        return response
-        Log.d("parsed", activities.toString())
-        print(activities)
+//        print(response.text)
+        val jsonString = response.text?.replace("```json", "")?.replace("```", "")?.trim()
+//        Log.d("the type of json", jsonString!!::class.java.typeName)
+//        Log.d()
+//        print(jsonString)
+
+        val activities = jsonString?.let { parseActivities(it) }
+        return activities!!
+////        return response
+//        Log.d("response", activities.toString())
+//        Log.d("parsed activities", activities.toString())
+//        print(activities)
 //        print(activities)
     }
 
 
-    fun parseActivities(jsonString: String): Activities {
-        return Json.decodeFromString(jsonString)
+    fun parseActivities(jsonString: String): List<ActivitiesItem> {
+//        val activities = Activities()
+//        jsonString.forEach { string ->
+//            val activityItem: ActivitiesItem = Json.decodeFromString<ActivitiesItem>(string)
+//            activities.add(activityItem)
+//        }
+        return Json.decodeFromString<List<ActivitiesItem>>(jsonString)
+//        return activities
     }
 }

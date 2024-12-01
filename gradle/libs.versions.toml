@@ -25,6 +25,7 @@ navigationCompose = "2.8.4"
 okhttp = "4.9.3"
 retrofit-serialization-converter = "0.8.0"
 
+
 mapsCompose="2.11.4"
 playServicesMaps="18.2.0"
 accompanist="0.33.2-alpha"

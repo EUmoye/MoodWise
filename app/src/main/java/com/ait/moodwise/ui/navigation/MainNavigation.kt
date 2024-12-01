@@ -1,5 +1,7 @@
 package com.ait.moodwise.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -11,9 +13,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ait.moodwise.MainActivity
 import com.ait.moodwise.ui.screens.MapAnimation
+import com.ait.moodwise.ui.screens.WeatherDetails
 //import com.ait.moodwise.ui.screens.WeatherDetails
 import com.ait.moodwise.ui.screens.WeatherDetailsContent
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainNavigation(
     navController: NavHostController
@@ -27,12 +31,12 @@ fun MainNavigation(
     ) {
         // Weather Details Screen
         composable(route = "Weather") {
-            WeatherDetailsContent(
-                weather = "weather",
-                recommendedActivities = listOf("Swimming", "Beach Volleyball", "Hiking"),
-                currentTime = currentTime.value
-            )
-//            WeatherDetails(viewModel = hiltViewModel())
+//            WeatherDetailsContent(
+////                weather = "weather",
+////                recommendedActivities = listOf("Swimming", "Beach Volleyball", "Hiking"),
+//                currentTime = currentTime.value
+//            )
+            WeatherDetails(viewModel = hiltViewModel())
         }
 
         composable(route = "Home") {
