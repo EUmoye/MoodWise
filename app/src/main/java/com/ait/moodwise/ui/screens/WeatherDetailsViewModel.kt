@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ait.moodwise.data.weather.weatherInfo
+import com.ait.moodwise.di.WeatherRetrofit
 import com.ait.moodwise.network.WeatherAPI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
+@WeatherRetrofit
 class WeatherDetailsViewModel @Inject constructor(
     private val weatherAPI: WeatherAPI
 ) : ViewModel() {

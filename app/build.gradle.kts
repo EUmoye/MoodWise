@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(files("../../spotify-app-remote-release-0.8.0.aar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,5 +103,18 @@ dependencies {
     implementation(libs.dotenv.kotlin)
     implementation (libs.kotlinx.coroutines.play.services)
     implementation(libs.accompanist.permissions.v0312alpha)
+
+    //Spotify
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
+
+//    implementation ('com.spotify.sdk.android:spotify-app-remote:2.10.0')
+//    implementation ('com.spotify.sdk.android:spotify-auth:2.1.0')
+//    implementation project(':spotify-app-remote')
+    implementation ("com.google.code.gson:gson:2.6.1")
+    implementation(libs.generativeai)
+
+
 
 }

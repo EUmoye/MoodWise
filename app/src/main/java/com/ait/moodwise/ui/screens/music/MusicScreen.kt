@@ -8,31 +8,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 
-
 @Composable
 fun MusicScreen(viewModel: MusicViewModel = viewModel()) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
 
     Scaffold(
         content = { padding ->
@@ -43,8 +35,6 @@ fun MusicScreen(viewModel: MusicViewModel = viewModel()) {
                     .padding(16.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-//                MoodDropdown(selectedMood = state.mood, onMoodChange = { viewModel.updateWeatherAndMood(state.weather, it) })
-                // Mood Selector as a LazyRow
                 MoodLazyRow(
                     selectedMood = state.mood,
                     onMoodChange = { newMood -> viewModel.updateMood(newMood) }
@@ -60,12 +50,10 @@ fun MusicScreen(viewModel: MusicViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 SongList(
                     songs = state.songs,
-                    onSongClick = { viewModel.openSongOnSpotify(it.spotifyLink) }
+                    onSongClick = { song ->
+                        viewModel.openSongOnYouTube(context, song.youtubeLink)
+                    }
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                NewReleasesSection()
-                Spacer(modifier = Modifier.height(16.dp))
-                CategorySection()
             }
         }
     )
@@ -109,48 +97,8 @@ fun MoodHeader(weather: String, mood: String) {
 }
 
 @Composable
-fun MoodDropdown(selectedMood: String, onMoodChange: (String) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    val moods = listOf("Happy", "Sad", "Relaxed", "Energetic", "Calm") // Add more moods if needed
-    var currentMood by remember { mutableStateOf(selectedMood) }
-
-    Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        TextField(
-            value = currentMood,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Select your mood") },
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    modifier = Modifier.clickable { expanded = !expanded }
-                )
-            }
-        )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            moods.forEach { mood ->
-                DropdownMenuItem(
-                    text = { Text(mood) },
-                    onClick = {
-                        currentMood = mood
-                        onMoodChange(mood) // Pass the selected mood to the parent composable
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun MoodLazyRow(selectedMood: String, onMoodChange: (String) -> Unit) {
-    val moods = listOf("Happy", "Sad", "Relaxed", "Energetic", "Calm", "Focus", "Chill") // Extend as needed
+    val moods = listOf("Happy", "Sad", "Relaxed", "Energetic", "Calm", "Focus", "Chill")
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -216,62 +164,6 @@ fun SongCard(song: Song, onClick: () -> Unit) {
             Column {
                 Text(song.title, style = MaterialTheme.typography.titleMedium)
                 Text(song.artist, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-            }
-        }
-    }
-}
-
-@Composable
-fun NewReleasesSection() {
-    Text(
-        text = "New Releases",
-        style = MaterialTheme.typography.titleLarge,
-        color = Color.DarkGray
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    LazyRow {
-        items(5) { // Replace with dynamic data
-            Card(
-                modifier = Modifier
-                    .size(120.dp)
-                    .padding(horizontal = 8.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                // Replace with album cover data
-                Image(
-                    painter = rememberAsyncImagePainter(model = "https://via.placeholder.com/120"),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CategorySection() {
-    Text(
-        text = "Categories",
-        style = MaterialTheme.typography.titleLarge,
-        color = Color.DarkGray
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    LazyRow {
-        val categories = listOf("Rock", "Metal", "Jazz", "Soul", "Chillout", "Classical")
-        items(categories) { category ->
-            Card(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .clickable { /* add the category click here */ },
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .wrapContentSize()
-                ) {
-                    Text(text = category, color = Color.Black)
-                }
             }
         }
     }
