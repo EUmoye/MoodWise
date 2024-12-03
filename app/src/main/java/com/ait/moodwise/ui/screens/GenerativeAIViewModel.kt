@@ -30,15 +30,16 @@ class GenAIViewModel: ViewModel() {
 //        }
 //    }
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun json_no_schema(): List<ActivitiesItem>{
+    suspend fun json_no_schema(cityCountry: String): List<ActivitiesItem>{
         val generativeModel =
             GenerativeModel(
                 // Specify a Gemini model appropriate for your use case
                 modelName = "gemini-1.5-flash",
                 // Access your API key as a Build Configuration variable (see "Set up your API key" above)
+                apiKey = "AIzaSyDVNZGkZjPOEqk76-1SfhJmYzxmiE0l4es",
             )
         var prompt = """
-        Generate 6 activities for me to do in 10 degrees celius weather in Budapest using this JSON schema:
+        Generate 6 activities for me to do in 10 degrees celius weather in ${cityCountry} using this JSON schema:
         [
             { "name": "String", "location": "String", "description": "String" }
         ]

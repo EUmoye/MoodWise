@@ -106,5 +106,8 @@ dependencies {
 
     // GenAI
     implementation(libs.generativeai)
+    // Animation
+    implementation(libs.lottie.compose)
+
 
 }

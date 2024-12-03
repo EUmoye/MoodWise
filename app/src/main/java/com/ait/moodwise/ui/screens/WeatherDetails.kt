@@ -107,7 +107,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.android.gms.location.LocationServices.getFusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.ait.moodwise.ui.screens.MapViewModel
+import com.ait.moodwise.ui.screens.location.MapViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -117,13 +117,33 @@ import java.util.TimerTask
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WeatherDetails(viewModel: WeatherDetailsViewModel = hiltViewModel()) {
+fun WeatherDetails(mapViewModel: MapViewModel) {
     val currentTime = remember { mutableStateOf(System.currentTimeMillis()) }
 
-    LaunchedEffect(Unit) {
-        viewModel.getWeatherDetails(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
-        viewModel.startPeriodicUpdates(cityCountry = "New York,US", apiKey = "3b3fb7a3dda7a0a2788ae82328224214")
+    val viewModel: WeatherDetailsViewModel = hiltViewModel()
+    val location by mapViewModel.locationState
+    val context = LocalContext.current
+    var cityCountry by rememberSaveable { mutableStateOf("New York") }
 
+    LaunchedEffect(location) {
+
+        location?.let {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
+            cityCountry = addresses?.firstOrNull()?.let { address ->
+                "${address.locality},${address.countryCode}"
+            } ?: "New York,US" // Default value if location is not available
+
+
+            viewModel.getWeatherDetails(
+                cityCountry = cityCountry,
+                apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
+            )
+            viewModel.startPeriodicUpdates(
+                cityCountry = cityCountry,
+                apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
+            )
+        }
         // Periodic time updates
         while (true) {
             currentTime.value = System.currentTimeMillis()
@@ -144,13 +164,6 @@ Box(
             .blur(radiusX = 15.dp, radiusY = 15.dp)
     )
 
-//    // Semi-transparent overlay
-//    Box(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(Color.Black.copy(alpha = 1.5f))
-//    )
-
     when (viewModel.weatherUIState) {
         is WeatherUIState.Loading -> {
             Box(
@@ -165,6 +178,7 @@ Box(
         is WeatherUIState.Success -> {
             WeatherDetailsContent(
                 weatherInfo = (viewModel.weatherUIState as WeatherUIState.Success).weatherInfo,
+                cityCountry = cityCountry,
                 currentTime = currentTime.value
             )
         }
@@ -186,15 +200,16 @@ Box(
 @Composable
 fun WeatherDetailsContent(
     weatherInfo: weatherInfo,
-//    weather: String?,
+    cityCountry: String,
     currentTime: Long
 
 ) {
     var testModel: GenAIViewModel = hiltViewModel()
     var activitiesList by rememberSaveable { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
+    val mapViewModel: MapViewModel
     LaunchedEffect(Unit) {
-        activitiesList = testModel.json_no_schema()
+        activitiesList = testModel.json_no_schema(cityCountry)
 
     }
     var isDetailsDialog by rememberSaveable { mutableStateOf(false) }
@@ -211,8 +226,6 @@ fun WeatherDetailsContent(
             .fillMaxSize()
             .padding(top = 50.dp)
             .verticalScroll(scrollState)
-
-//            .padding(50.dp)
     ) {
         if (!activitiesList.isEmpty()) {
             Log.d("length of list", activitiesList.size.toString())
@@ -269,11 +282,7 @@ fun WeatherDetailsContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 20.dp, start = 16.dp, end = 16.dp)
-//                .padding(bottom = 16.dp)
                 .background(Color.Transparent),
-//                .graphicsLayer {
-//                    renderEffect = BlurEffect(10f, 10f)
-//                },
             horizontalArrangement = Arrangement.SpaceBetween
 
         ) {
