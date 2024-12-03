@@ -35,13 +35,7 @@ fun MainNavigation(
         navController = navController,
         startDestination = "map"
     ) {
-        // Weather Details Screen
         composable(route = "Weather") {
-//            WeatherDetailsContent(
-////                weather = "weather",
-////                recommendedActivities = listOf("Swimming", "Beach Volleyball", "Hiking"),
-//                currentTime = currentTime.value
-//            )
             WeatherDetails(mapViewModel)
         }
 

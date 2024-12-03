@@ -124,10 +124,11 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
     val currentTime = remember { mutableStateOf(System.currentTimeMillis()) }
 
     val viewModel: WeatherDetailsViewModel = hiltViewModel()
+    val genAIViewModel: GenAIViewModel = hiltViewModel()
     val location by mapViewModel.locationState
     val context = LocalContext.current
     var cityCountry by rememberSaveable { mutableStateOf("New York") }
-
+    var activitiesList by rememberSaveable { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
     LaunchedEffect(location) {
 
         location?.let {
@@ -146,6 +147,9 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
                 cityCountry = cityCountry,
                 apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
             )
+
+            genAIViewModel.json_no_schema(cityCountry) // Have a state in the genaiviewmodel that holds
+            // the activities list. similar to what was done for the location
         }
         // Periodic time updates
         while (true) {
@@ -157,7 +161,6 @@ Box(
     modifier =  Modifier.fillMaxSize()
 ) {
 //    TODO: Update the background image based on the weather
-//    val image = getWeatherBackground(viewModel.)
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(R.drawable.weather_lightning_1)
@@ -169,13 +172,14 @@ Box(
             .blur(radiusX = 15.dp, radiusY = 15.dp)
     )
 
+//    The genaiview model should be called alongside the weather details viewmodel
     when (viewModel.weatherUIState) {
         is WeatherUIState.Loading -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator() // Update this to have the animation of different weathers
                 Text(text = "Loading Weather Details...")
             }
         }

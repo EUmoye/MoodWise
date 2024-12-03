@@ -1,11 +1,13 @@
 package com.ait.moodwise
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -54,6 +56,7 @@ import androidx.compose.ui.unit.sp
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +82,6 @@ class MainActivity : ComponentActivity() {
                 var selectedItemIndex by rememberSaveable {
                     mutableStateOf(0)
                 }
-//                MainNavigation()
                 Scaffold  (
                     bottomBar =  {
                         NavigationBar(
@@ -104,18 +106,11 @@ class MainActivity : ComponentActivity() {
                                       ))
                                   },
                                   icon = {
-//                                      BadgedBox(
-//                                          badge = {
-//
-//                                          }
-//                                      )
-//                                      {
                                           Icon(
                                               imageVector = if (index == selectedItemIndex) item.selectedIcon else item.unselectedIcon,
                                               contentDescription = item.title,
                                               tint = Color.White
                                           )
-//                                      }
                                   }
                               )
                           }

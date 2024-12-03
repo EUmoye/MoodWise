@@ -96,7 +96,6 @@ fun LocationContent(
         fusedLocationClient.lastLocation.addOnSuccessListener { loc: Location? ->
             loc?.let {
                 viewModel.locationState.value = it
-                // Navigate to the weather page once the location is available
                 navController.navigate("Weather")
             }
         }
@@ -113,14 +112,12 @@ fun LocationContent(
             ) {
                 Text("Location: ${it.latitude}, ${it.longitude}")
                 val geocoder = Geocoder(context, Locale.getDefault())
-//            val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
                 val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
                 if (addresses != null) {
                     if (addresses.isNotEmpty()) {
                         val address = addresses[0]
                         var address_1 = ""
                         address_1 = "${address.locality}, ${address.countryName}"
-                        Text(address_1)
                     }
                 }
             } ?: Text("Fetching location...")

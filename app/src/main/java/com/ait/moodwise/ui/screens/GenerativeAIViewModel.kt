@@ -3,6 +3,7 @@ package com.ait.moodwise.ui.screens
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.ait.moodwise.data.activity.Activities
 import com.ait.moodwise.data.activity.ActivitiesItem
@@ -12,6 +13,7 @@ import kotlinx.serialization.json.Json
 class GenAIViewModel: ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun json_no_schema(cityCountry: String): List<ActivitiesItem>{
+        var activities = { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
         val generativeModel =
             GenerativeModel(
                 // Specify a Gemini model appropriate for your use case
@@ -28,8 +30,9 @@ class GenAIViewModel: ViewModel() {
 
         val response = generativeModel.generateContent(prompt)
         val jsonString = response.text?.replace("```json", "")?.replace("```", "")?.trim()
-        val activities = jsonString?.let { parseActivities(it) }
-        return activities!!
+        val test = jsonString?.let { parseActivities(it) }
+//        activities = test TODO fix this to ensure it can hold a variable to be referenced elsewhere
+        return test!!
     }
 
 
