@@ -6,7 +6,9 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-class YouTubeRepository(private val apiKey: String) {
+class YouTubeRepository {
+
+    private val apiKey = "AIzaSyAGy3uMnrDivcAI2Q5OGOMubVRiFgXR5xM"
 
     suspend fun searchYouTubeVideo(songName: String, artist: String): String? {
         return withContext(Dispatchers.IO) {

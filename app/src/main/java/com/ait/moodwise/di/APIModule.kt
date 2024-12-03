@@ -20,14 +20,9 @@ import javax.inject.Singleton
 @Retention(AnnotationRetention.RUNTIME)
 annotation class WeatherRetrofit
 
-@Qualifier
-@Retention(AnnotationRetention.RUNTIME)
-annotation class SpotifyRetrofit
-
 @Module
 @InstallIn(SingletonComponent::class)
 object APIModule {
-    private const val SPOTIFY_BASE_URL = "https://accounts.spotify.com/"
     private const val WEATHER_BASE_URL = "https://api.openweathermap.org/"
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -51,30 +46,6 @@ object APIModule {
     fun provideWeatherAPI(@WeatherRetrofit retrofit: Retrofit): WeatherAPI {
         return retrofit.create(WeatherAPI::class.java)
     }
-
-//    @SpotifyRetrofit
-//    @OptIn(ExperimentalSerializationApi::class)
-//    @Provides
-//    @Singleton
-//    fun provideSpotifyAPIRetrofit(): Retrofit {
-//        val client = OkHttpClient.Builder()
-//            .build()
-//
-//        return Retrofit.Builder()
-//            .baseUrl(SPOTIFY_BASE_URL)
-//            .addConverterFactory(
-//                Json{ ignoreUnknownKeys = true }.asConverterFactory("application/json".toMediaType()) )
-//            .client(client)
-//            .build()
-//    }
-
-
-//    @Provides
-//    @Singleton
-//    fun provideSpotifyAPI( @SpotifyRetrofit retrofit: Retrofit): SpotifyAPI {
-//        return retrofit.create(SpotifyAPI::class.java)
-//    }
-
 
     @Provides
     fun provideGenerativeModel(): GenerativeModel {

@@ -1,11 +1,11 @@
 package com.ait.moodwise.data.music
 
-import android.util.Log
 import com.ait.moodwise.ui.screens.music.Song
 import com.google.ai.client.generativeai.GenerativeModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+
 
 class MusicRepository {
 
@@ -17,24 +17,24 @@ class MusicRepository {
     suspend fun fetchSongs(weather: String, mood: String): List<Song> = withContext(Dispatchers.IO) {
         val prompt = """
             Based on the current weather being "$weather" and the mood being "$mood",
-            suggest a list of songs. Make sure the link you provide is valid and working please before you suggest me the song. Provide the response in this JSON format:
+            suggest a good list of songs to listen to. 
+            Provide the response in this JSON format:
             [
-                {"name": "Song Name", "artist": "Artist Name", "youtube_url": "YouTube URL", "album_art": "Image URL"}
+                {"name": "Song Name", "artist": "Artist Name"}
             ]
         """.trimIndent()
 
         try {
             val response = generativeModel.generateContent(prompt).text ?: return@withContext emptyList<Song>()
-            Log.d("MusicRepository", "Response: $response")
-
+            println(response)
             val jsonArray = JSONArray(response)
             List(jsonArray.length()) { index ->
                 val songJson = jsonArray.getJSONObject(index)
                 Song(
                     title = songJson.getString("name"),
                     artist = songJson.getString("artist"),
-                    youtubeLink = songJson.getString("youtube_url"),
-                    albumArt = songJson.getString("album_art")
+                    youtubeLink = "",
+                    albumArt = ""
                 )
             }
         } catch (e: Exception) {
