@@ -13,6 +13,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.sharp.Home
+import androidx.compose.material.icons.sharp.LocationOn
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -39,6 +41,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 
 @AndroidEntryPoint
@@ -55,13 +66,13 @@ class MainActivity : ComponentActivity() {
                     BottomNavItem(
                         title = "Home",
                         selectedIcon = Icons.Filled.Home,
-                        unselectedIcon = Icons.Outlined.Home,
+                        unselectedIcon = Icons.Sharp.Home,
                         hasNews = false
                     ),
                     BottomNavItem(
                         title = "Weather",
                         selectedIcon = Icons.Filled.LocationOn,
-                        unselectedIcon = Icons.Outlined.LocationOn,
+                        unselectedIcon = Icons.Sharp.LocationOn,
                         hasNews = false
                     )
                 )
@@ -71,7 +82,11 @@ class MainActivity : ComponentActivity() {
 //                MainNavigation()
                 Scaffold  (
                     bottomBar =  {
-                        NavigationBar {
+                        NavigationBar(
+                            containerColor = Color.Transparent
+
+                        ) {
+
                           items.forEachIndexed { index, item ->
                               NavigationBarItem(
                                   selected = selectedItemIndex == index,
@@ -80,7 +95,13 @@ class MainActivity : ComponentActivity() {
                                       navController.navigate(item.title)
                                   },
                                   label = {
-                                      Text(text = item.title)
+                                      Text(
+                                          text = item.title,
+
+                                          style = TextStyle(
+                                              fontSize = 20.sp,
+                                              fontWeight = FontWeight.Bold,
+                                      ))
                                   },
                                   icon = {
 //                                      BadgedBox(
@@ -90,10 +111,9 @@ class MainActivity : ComponentActivity() {
 //                                      )
 //                                      {
                                           Icon(
-                                              imageVector = if(index == selectedItemIndex) {
-                                                  item.selectedIcon
-                                              } else item.unselectedIcon,
-                                              contentDescription = item.title
+                                              imageVector = if (index == selectedItemIndex) item.selectedIcon else item.unselectedIcon,
+                                              contentDescription = item.title,
+                                              tint = Color.White
                                           )
 //                                      }
                                   }

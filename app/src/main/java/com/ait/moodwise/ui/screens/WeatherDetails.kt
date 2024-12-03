@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,6 +50,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -76,6 +78,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -153,6 +156,8 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
 Box(
     modifier =  Modifier.fillMaxSize()
 ) {
+//    TODO: Update the background image based on the weather
+//    val image = getWeatherBackground(viewModel.)
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(R.drawable.weather_lightning_1)
@@ -224,7 +229,7 @@ fun WeatherDetailsContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 50.dp)
+            .padding(top = 80.dp, start = 20.dp, end = 20.dp)
             .verticalScroll(scrollState)
     ) {
         if (!activitiesList.isEmpty()) {
@@ -254,13 +259,16 @@ fun WeatherDetailsContent(
                 ) {
                 Text(
                 text = weatherInfo.name,
-                    style = MaterialTheme.typography.headlineLarge
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color.White
                 )
                 IconButton(
                     onClick = {
                         showSearchBar = true
-                    }
-                ) {
+                    },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = Color.White
+                )) {
                     if (!showSearchBar) {
                         Icon(
                             imageVector = Icons.Filled.Search,
@@ -290,12 +298,13 @@ fun WeatherDetailsContent(
             Column {
                 Text(
                     text = "${weatherInfo.main.temp}°C",
+                    color = Color.White,
                     style = MaterialTheme.typography.displayLarge
                 )
                 Text(
                     text = "Feels like ${weatherInfo.main.feelsLike}°C",
+                    color = Color.White,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
                 )
             }
 
@@ -317,81 +326,127 @@ fun WeatherDetailsContent(
             }
         }
 
-        // City Description
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-            .padding(bottom = 20.dp, start = 16.dp, end = 16.dp)
-            .background(Color.Gray.copy(alpha = 0.2f))
-                .border(
-                    border = BorderStroke(1.dp, color = Color.Black),
-                    shape = RoundedCornerShape(10.dp)
-
-                ),
-//                    Color.Gray.copy(alpha = 0.5f),
-            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)
-                .background(Color.Transparent)
-            ) {
-                Text(
-                    text = "CITY DESCRIPTION",
-                    style = MaterialTheme.typography.labelLarge,
-                )
-                Text(
-                    text = "Cloudiness: ${weatherInfo.clouds.all}%",
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = "Wind Speed: ${weatherInfo.wind.speed}m/s",
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-        }
-
-        // Stats Section
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-            .padding(bottom = 20.dp, start = 16.dp, end = 16.dp),
-
-
-        horizontalArrangement = Arrangement.SpaceBetween
+                .padding(bottom = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .width((LocalConfiguration.current.screenWidthDp.dp)/2)
-                    .height(80.dp)
-                    .padding(8.dp)
-                    .background(Color.Transparent)
-                    .border(
-                        border = BorderStroke(1.dp, Color.Black),
-                        shape = RoundedCornerShape(10.dp)
-                    ),
+            val width = ((LocalConfiguration.current.screenWidthDp.dp)/2)
+            val totalHeight = 200.dp // Example fixed height, adjust as needed
 
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Humidity: ${weatherInfo.main.humidity}%",
-                    style = MaterialTheme.typography.bodyMedium)
-            }
-            Box(
+            Card(
                 modifier = Modifier
-                    .width((LocalConfiguration.current.screenWidthDp.dp)/2)
-                    .height(80.dp)
-                    .background(Color.Transparent)
+                    .width(width)
+                    .height(totalHeight)
+                    .padding(16.dp)
+                    .background(Color.Black.copy(alpha = 0.3f))
                     .border(
-                        border = BorderStroke(1.dp, Color.Black),
+                        border = BorderStroke(1.dp, color = Color.White),
                         shape = RoundedCornerShape(10.dp)
-                    )
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
+
+                    ),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
-                Text(
-//                    text = "weather",
-                    text ="Pressure: ${weatherInfo.main.pressure} hPa",
-                    style = MaterialTheme.typography.bodyMedium)
+                Box(modifier = Modifier.padding(totalHeight*0.15f)) {
+                    Text(
+                        text = "Our report for ${weatherInfo.name} today is ${
+                            weatherInfo.weather.get(
+                                0
+                            ).description
+                        }." +
+                                "We hope you enjoy your day",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
+                    )
+                }
             }
+
+            // then create a column for the three top items: hum, wind, and, main
+            Column(
+                modifier = Modifier
+                    .width(width)
+                    .height(totalHeight)
+                    .padding(bottom = 16.dp)
+                    .background(color = Color.Transparent),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .width(width)
+                        .padding(top = 16.dp)
+                        .height(totalHeight/3)
+                        .background(Color.Black.copy(alpha = 0.3f))
+                        .border(
+                            border = BorderStroke(1.dp, color = Color.White),
+                            shape = RoundedCornerShape(10.dp)
+
+                        ),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                ) {
+                    Box(modifier = Modifier.padding(totalHeight * 0.1f)) {
+                        Text(
+                            text = "${weatherInfo.weather.get(0).main}: " +
+                                    "${weatherInfo.weather.get(0).description}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .width(width)
+                        .height(totalHeight/2)
+                        .background(Color.Transparent),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val width = ((LocalConfiguration.current.screenWidthDp.dp)/2)
+                    Card(
+                        modifier = Modifier
+//                            .width(width/2)
+                            .weight(1f)
+                            .background(Color.Black.copy(alpha = 0.3f))
+                            .border(
+                                border = BorderStroke(1.dp, color = Color.White),
+                                shape = RoundedCornerShape(10.dp)
+
+                            ),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                    ) {
+                        Box(modifier = Modifier.padding(totalHeight * 0.1f)){
+                            Text(
+                                text = "Humidity: ${weatherInfo.main.humidity}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                            )
+                        }
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(Color.Black.copy(alpha = 0.3f))
+                            .border(
+                                border = BorderStroke(1.dp, color = Color.White),
+                                shape = RoundedCornerShape(10.dp)
+
+                            ),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                    ) {
+                        Box(modifier = Modifier.padding(totalHeight * 0.1f)) {
+                            Text(
+                                text = "Wind: ${weatherInfo.wind.speed}m/s",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+
+            }
+
+
         }
 
         // Recommended Activities
@@ -402,19 +457,22 @@ fun WeatherDetailsContent(
             ) {
             Text(
                 text = "RECOMMENDED ACTIVITIES",
-                style = MaterialTheme.typography.labelMedium
+
+                style = MaterialTheme.typography.displaySmall,
+                color = Color.White,
+                textAlign = TextAlign.Center
+
             )
             if (!activitiesList.isEmpty()){
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp),
+                        .padding(top = 16.dp)
+                        .background(Color.Black.copy(alpha = 0.3f))
                 ) {
                     for (i in 0 until 3) {
                         Row(
                             modifier = Modifier.fillMaxWidth()
-//                                .padding(bottom = 16.dp),
-//                            horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             for (j in 0 until 2) {
                                 val index = i * 2 + j
@@ -488,9 +546,6 @@ fun SearchBar(
                 }
             }
             .background(Color.Transparent)
-//            .graphicsLayer {
-//                renderEffect = BlurEffect(10f, 10f)
-//            }
             .padding(16.dp),
         label = { Text("Search a city's weather and press enter") },
         trailingIcon = {
@@ -549,11 +604,8 @@ fun ShowActivitiesDetailsDialog(
                         offsetY += dragAmount.y
                         if (offsetY < 0f) offsetY = 0f
                     }
-                }.background(Color.Transparent),
-//                .graphicsLayer {
-//                    renderEffect = BlurEffect(10f, 10f)
-//                },// Adjust height as needed
-//                .padding(16.dp),
+                }
+                .background(Color.Gray.copy(alpha = 0.2f)),
             shape = RoundedCornerShape(16.dp)
         ) {
 
@@ -573,8 +625,6 @@ fun ShowActivitiesDetailsDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-//                    .verticalScroll(scrollState)
-//                    .padding(16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -628,7 +678,7 @@ fun ActivityCard(
             .background(Color.Transparent)
             .clickable(onClick = onClick)
             .border(
-            border = BorderStroke(1.dp, color = Color.Black),
+            border = BorderStroke(1.dp, color = Color.White),
                 shape = RoundedCornerShape(10.dp)
             ),
     colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -636,15 +686,60 @@ fun ActivityCard(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
-                .background(Color.Transparent)
+                .background(Color.Black.copy(alpha = 0.3f))
         ) {
             Text(
                 text = activity.name,
                 style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = Color.White
+
             )
         }
     }
 }
+
+@Composable
+fun WeatherInfo(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.White
+        )
+    }
+}
+
+fun getWeatherBackground(weather: String) {
+    when (weather) {
+        "clear" -> R.drawable.weather_clear
+        "cloudy" -> R.drawable.weather_cloud_4
+        "clouds", "few cloud", "partial cloud" -> R.drawable.weather_cloud_4
+        "rain", "rainy" -> R.drawable.weather_rain
+        "snow" -> R.drawable.weather_snow
+        "thunderstorm" -> R.drawable.weather_lightning_1
+        "drizzle" -> R.drawable.weather_drizzle
+        "fog", "mist" -> R.drawable.weather_fog
+        "haze" -> R.drawable.weather_fog
+        "dust", "sand" -> R.drawable.weather_dust
+        "tornado" -> R.drawable.weather_tornado
+        "windy", "wind" -> R.drawable.weather_windy
+        "sunny", "sun" -> R.drawable.weather_sunny
+        "hurricane" -> R.drawable.weather_hurricane
+        "tornado" -> R.drawable.weather_tornado
+        "storm" -> R.drawable.weather_lightning_1
+        else -> R.drawable.weather_clear
+
+    }
+}
+
+
+
 
 
