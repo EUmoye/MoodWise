@@ -135,6 +135,7 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
     var activitiesList by rememberSaveable { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
     var initialTimeInMillis by rememberSaveable { mutableStateOf(0L) }
     var localTime by rememberSaveable { mutableStateOf("") }
+    var bcgImg by rememberSaveable { mutableStateOf(R.drawable.weather_clear) }
 
     LaunchedEffect(location) {
         location?.let {
@@ -168,12 +169,27 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
         }
     }
 
-    val bcgImg = getWeatherBackground(weatherInfo?.weather?.get(0)?.main ?: "clear")
-        Box(
-            modifier =  Modifier.fillMaxSize()
-        ) {
+    LaunchedEffect(weatherInfo) {
+        if (weatherInfo != null) {
+            initialTimeInMillis = (weatherInfo.dt + weatherInfo.timezone) * 1000L
+            localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
+            activitiesList = genAIViewModel.json_no_schema(cityCountry) //TODO I think city country isnt updated
+            bcgImg = getWeatherBackground(weatherInfo.weather[0].main)
+        }
+    }
+//    LaunchedEffect(cityCountry) {
+//        activitiesList = genAIViewModel.json_no_schema(cityCountry)
+//    }
 
-            AsyncImage(
+    if (weatherInfo != null) {
+        Log.d("main", "main: ${weatherInfo.weather[0].main}")
+    }
+Log.d("bcg", "bcgImg: $bcgImg")
+    Box(
+            modifier =  Modifier.fillMaxSize()
+    ) {
+
+        AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(bcgImg)
                     .crossfade(true)
@@ -252,10 +268,6 @@ fun WeatherDetailsContent(
             .padding(top = 80.dp, start = 20.dp, end = 20.dp)
             .verticalScroll(scrollState)
     ) {
-        if (!activities.isEmpty()) {
-            Log.d("length of list", activities.size.toString())
-            Log.d("activities list", activities.get(0).name)
-        }
 
         if (showSearchBar) {
             SearchBar(
