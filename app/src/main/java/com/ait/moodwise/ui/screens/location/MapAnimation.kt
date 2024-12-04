@@ -23,23 +23,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.ait.moodwise.location.LocationManager
 import com.google.accompanist.permissions.*
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.model.LatLng
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.util.Locale
-import javax.inject.Inject
 
 @ExperimentalPermissionsApi
 @Composable
@@ -102,26 +95,6 @@ fun LocationContent(
     }
     if (location == null) {
         WeatherAnimation()
-    }
-    else {
-        location?.let {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 30.dp)
-            ) {
-                Text("Location: ${it.latitude}, ${it.longitude}")
-                val geocoder = Geocoder(context, Locale.getDefault())
-                val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
-                if (addresses != null) {
-                    if (addresses.isNotEmpty()) {
-                        val address = addresses[0]
-                        var address_1 = ""
-                        address_1 = "${address.locality}, ${address.countryName}"
-                    }
-                }
-            } ?: Text("Fetching location...")
-        }
     }
 }
 

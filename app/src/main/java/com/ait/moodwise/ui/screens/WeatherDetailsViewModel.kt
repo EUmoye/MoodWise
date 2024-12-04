@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 
@@ -25,9 +28,27 @@ class WeatherDetailsViewModel @Inject constructor(
 ) : ViewModel() {
 
     var weatherUIState: WeatherUIState by mutableStateOf(WeatherUIState.Loading)
+    var localTime by mutableStateOf("")
 
     private val handler = Handler(Looper.getMainLooper())
-    private val updateInterval = 60000L // 1 minute
+    private val updateInterval = 3600000L // 1 minute
+
+    fun getLocalTime(dt: Int?, timezone: Int?): String {
+
+        if (dt == null || timezone == null) {
+            return ""
+        }
+        // Convert dt (UTC time) to milliseconds
+        val utcTimeInMillis = dt * 1000L
+
+        // Add the timezone offset (in seconds) to the UTC time
+        val localTimeInMillis = utcTimeInMillis + (timezone * 1000L)
+
+        // Format the local time to a readable date and time string
+        val dateFormat = SimpleDateFormat("yyyy-MMMM-dd HH:mm", Locale.getDefault())
+        localTime = dateFormat.format(Date(localTimeInMillis))
+        return localTime
+    }
 
     fun getWeatherDetails(cityCountry: String, apiKey: String) {
         Log.d("WeatherDetailsViewModel", "Fetching weather details...") // Log added for debugging

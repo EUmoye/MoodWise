@@ -85,8 +85,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold  (
                     bottomBar =  {
                         NavigationBar(
-                            containerColor = Color.Transparent
-
+                            containerColor = Color.Transparent,
                         ) {
 
                           items.forEachIndexed { index, item ->
@@ -99,7 +98,7 @@ class MainActivity : ComponentActivity() {
                                   label = {
                                       Text(
                                           text = item.title,
-
+                                          color = Color.White,
                                           style = TextStyle(
                                               fontSize = 20.sp,
                                               fontWeight = FontWeight.Bold,

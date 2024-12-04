@@ -1,8 +1,6 @@
 package com.ait.moodwise.ui.screens
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import android.util.Log
@@ -10,9 +8,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -43,8 +39,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,12 +47,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,67 +61,82 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import kotlinx.coroutines.launch
-import java.util.Locale
-import java.util.Random
-import com.google.accompanist.permissions.rememberPermissionState
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ait.moodwise.R
 import com.ait.moodwise.data.activity.ActivitiesItem
 import com.ait.moodwise.data.activity.Activity
 import com.ait.moodwise.data.weather.weatherInfo
-import com.google.accompanist.permissions.shouldShowRationale
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.maps.android.compose.CameraPositionState
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapType
-import com.google.maps.android.compose.GoogleMap
-import com.google.android.gms.location.LocationServices.getFusedLocationProviderClient
-import com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom
-import com.google.maps.android.compose.rememberCameraPositionState
 import com.ait.moodwise.ui.screens.location.MapViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Timer
-import java.util.TimerTask
+import java.util.Locale
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import kotlin.math.roundToInt
 
+@Composable
+fun WeatherAnimation() {
+    val animations = listOf(
+        "rain_animation.json",
+        "sun_animation.json",
+        "snow_animation.json",
+        "cloud_animation.json"
+    )
+    var currentAnimationIndex by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(3000) // Change animation every 3 seconds
+            currentAnimationIndex = (currentAnimationIndex + 1) % animations.size
+        }
+    }
+
+    val composition by rememberLottieComposition(LottieCompositionSpec.Asset(animations[currentAnimationIndex]))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever
+    )
+
+    LottieAnimation(
+        composition,
+        progress,
+        modifier = Modifier.fillMaxSize()
+    )
+}
+@SuppressLint("SuspiciousIndentation")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherDetails(mapViewModel: MapViewModel) {
     val currentTime = remember { mutableStateOf(System.currentTimeMillis()) }
 
     val viewModel: WeatherDetailsViewModel = hiltViewModel()
+    val weatherInfo = (viewModel.weatherUIState as? WeatherUIState.Success)?.weatherInfo
     val genAIViewModel: GenAIViewModel = hiltViewModel()
     val location by mapViewModel.locationState
     val context = LocalContext.current
     var cityCountry by rememberSaveable { mutableStateOf("New York") }
     var activitiesList by rememberSaveable { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
-    LaunchedEffect(location) {
+    var initialTimeInMillis by rememberSaveable { mutableStateOf(0L) }
+    var localTime by rememberSaveable { mutableStateOf("") }
 
+    LaunchedEffect(location) {
         location?.let {
             val geocoder = Geocoder(context, Locale.getDefault())
             val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
@@ -138,93 +144,103 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
                 "${address.locality},${address.countryCode}"
             } ?: "New York,US" // Default value if location is not available
 
-
             viewModel.getWeatherDetails(
                 cityCountry = cityCountry,
                 apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
             )
-            viewModel.startPeriodicUpdates(
-                cityCountry = cityCountry,
-                apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
-            )
 
-            genAIViewModel.json_no_schema(cityCountry) // Have a state in the genaiviewmodel that holds
+            activitiesList = genAIViewModel.json_no_schema(cityCountry) // Have a state in the genaiviewmodel that holds
             // the activities list. similar to what was done for the location
         }
-        // Periodic time updates
+    }
+
+
+    if (weatherInfo != null && initialTimeInMillis == 0L) {
+        initialTimeInMillis = (weatherInfo.dt + weatherInfo.timezone) * 1000L
+        localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
+    }
+
+    LaunchedEffect(Unit) {
         while (true) {
-            currentTime.value = System.currentTimeMillis()
-            kotlinx.coroutines.delay(60000) // Update every minute
+            delay(60000) // Wait for 1 minute
+            initialTimeInMillis += 60000 // Increment by 1 minute
+            localTime = SimpleDateFormat("yyyy-MMMM-dd HH:mm", Locale.getDefault()).format(Date(initialTimeInMillis))
         }
     }
-Box(
-    modifier =  Modifier.fillMaxSize()
-) {
-//    TODO: Update the background image based on the weather
-    AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(R.drawable.weather_lightning_1)
-            .crossfade(true)
-            .build(),
-        contentDescription = "Background Image",
-        contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxSize()
-            .blur(radiusX = 15.dp, radiusY = 15.dp)
-    )
 
-//    The genaiview model should be called alongside the weather details viewmodel
-    when (viewModel.weatherUIState) {
-        is WeatherUIState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator() // Update this to have the animation of different weathers
-                Text(text = "Loading Weather Details...")
-            }
-        }
+    val bcgImg = getWeatherBackground(weatherInfo?.weather?.get(0)?.main ?: "clear")
+        Box(
+            modifier =  Modifier.fillMaxSize()
+        ) {
 
-        is WeatherUIState.Success -> {
-            WeatherDetailsContent(
-                weatherInfo = (viewModel.weatherUIState as WeatherUIState.Success).weatherInfo,
-                cityCountry = cityCountry,
-                currentTime = currentTime.value
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(bcgImg)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Background Image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+                    .blur(radiusX = 15.dp, radiusY = 15.dp)
             )
-        }
 
-        is WeatherUIState.Error -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "Failed to load weather details. Please try again.")
+            when (viewModel.weatherUIState) {
+                is WeatherUIState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator() // Update this to have the animation of different weathers
+                        WeatherAnimation()
+                    }
+                }
+
+                is WeatherUIState.Success -> {
+                    if (weatherInfo != null) {
+                        WeatherDetailsContent(
+                            localTime = localTime,
+                            weatherInfo = weatherInfo,
+                            cityCountry = cityCountry,
+                            currentTime = currentTime.value,
+                            activities = activitiesList,
+                            viewModel = viewModel
+                        )
+                    }
+                }
+
+                is WeatherUIState.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Failed to load weather details. Please try again.")
+                    }
+                }
             }
         }
-    }
-}
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun WeatherDetailsContent(
+    localTime: String,
     weatherInfo: weatherInfo,
     cityCountry: String,
-    currentTime: Long
+    currentTime: Long,
+    activities: List<ActivitiesItem>,
+    viewModel: WeatherDetailsViewModel
 
 ) {
+
+
     var testModel: GenAIViewModel = hiltViewModel()
-    var activitiesList by rememberSaveable { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
     val mapViewModel: MapViewModel
-    LaunchedEffect(Unit) {
-        activitiesList = testModel.json_no_schema(cityCountry)
-
-    }
     var isDetailsDialog by rememberSaveable { mutableStateOf(false) }
     var isDialogVisible by remember { mutableStateOf(false) }
     var selectedActivity by remember { mutableStateOf<ActivitiesItem?>(null) }
-    var recommendedActivities = listOf(ActivitiesItem("sleep", "in budapest", "just sleep"))
+//    var recommendedActivities = listOf(ActivitiesItem("sleep", "in budapest", "just sleep"))
     val scrollState = rememberScrollState()
     var showSearchBar by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
@@ -236,16 +252,23 @@ fun WeatherDetailsContent(
             .padding(top = 80.dp, start = 20.dp, end = 20.dp)
             .verticalScroll(scrollState)
     ) {
-        if (!activitiesList.isEmpty()) {
-            Log.d("length of list", activitiesList.size.toString())
-            Log.d("activities list", activitiesList.get(0).name)
+        if (!activities.isEmpty()) {
+            Log.d("length of list", activities.size.toString())
+            Log.d("activities list", activities.get(0).name)
         }
 
         if (showSearchBar) {
             SearchBar(
                 query = searchQuery,
                 onQueryChanged = { searchQuery = it},
-                onSearch = {} ,
+                onSearch = {
+                    if (searchQuery.isNotBlank()) {
+                        viewModel.getWeatherDetails(
+                            cityCountry = searchQuery,
+                            apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
+                        )
+                    }
+                } ,
                 onCloseSearchBar = {
                     showSearchBar = false
                 }
@@ -253,7 +276,6 @@ fun WeatherDetailsContent(
         }
         // Top Section: City Name and Date/Time
         Column(modifier = Modifier
-
             .padding(bottom = 20.dp, start = 16.dp, end = 16.dp)
             .background(Color.Transparent),
         ) {
@@ -283,9 +305,9 @@ fun WeatherDetailsContent(
             }
 
             Text(
-                text = "Local Time: ${SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(currentTime))}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                text = if (localTime == "") "" else "Local Time: $localTime",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White
             )
         }
 
@@ -301,12 +323,12 @@ fun WeatherDetailsContent(
             // Temperature
             Column {
                 Text(
-                    text = "${weatherInfo.main.temp}°C",
+                    text = "${weatherInfo.main.temp.roundToInt()}°C",
                     color = Color.White,
                     style = MaterialTheme.typography.displayLarge
                 )
                 Text(
-                    text = "Feels like ${weatherInfo.main.feelsLike}°C",
+                    text = "Feels like ${weatherInfo.main.feelsLike.roundToInt()}°C",
                     color = Color.White,
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -334,6 +356,7 @@ fun WeatherDetailsContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 20.dp),
+//                .background(Color.Transparent),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val width = ((LocalConfiguration.current.screenWidthDp.dp)/2)
@@ -352,17 +375,29 @@ fun WeatherDetailsContent(
                     ),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
-                Box(modifier = Modifier.padding(totalHeight*0.15f)) {
-                    Text(
-                        text = "Our report for ${weatherInfo.name} today is ${
-                            weatherInfo.weather.get(
-                                0
-                            ).description
-                        }." +
-                                "We hope you enjoy your day",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White
-                    )
+                Box(modifier = Modifier.padding(totalHeight*0.12f)) {
+                    Column (
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .background(Color.Transparent),
+                    ) {
+                        Text(
+                            text = "${weatherInfo.name.uppercase()}",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Our report for ${weatherInfo.name} today is ${
+                                weatherInfo.weather.get(
+                                    0
+                                ).description
+                            }." +
+                                    "We hope you enjoy your day!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                        )
+                    }
+
                 }
             }
 
@@ -385,16 +420,31 @@ fun WeatherDetailsContent(
                             border = BorderStroke(1.dp, color = Color.White),
                             shape = RoundedCornerShape(10.dp)
 
-                        ),
+                        )
+                        .align(Alignment.CenterHorizontally),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                 ) {
-                    Box(modifier = Modifier.padding(totalHeight * 0.1f)) {
-                        Text(
-                            text = "${weatherInfo.weather.get(0).main}: " +
-                                    "${weatherInfo.weather.get(0).description}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
-                        )
+                    Box(modifier = Modifier
+                        .padding(8.dp)
+//                        .height()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(bottom = 16.dp)
+                        ) {
+                            Text(
+                                text = "${weatherInfo.weather.get(0).main.uppercase()}",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = "${weatherInfo.weather.get(0).description}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
 
@@ -403,12 +453,12 @@ fun WeatherDetailsContent(
                         .width(width)
                         .height(totalHeight/2)
                         .background(Color.Transparent),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+
                 ) {
                     val width = ((LocalConfiguration.current.screenWidthDp.dp)/2)
                     Card(
                         modifier = Modifier
-//                            .width(width/2)
                             .weight(1f)
                             .background(Color.Black.copy(alpha = 0.3f))
                             .border(
@@ -418,12 +468,32 @@ fun WeatherDetailsContent(
                             ),
                         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
-                        Box(modifier = Modifier.padding(totalHeight * 0.1f)){
-                            Text(
-                                text = "Humidity: ${weatherInfo.main.humidity}%",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
-                            )
+                        Box(modifier = Modifier
+                            .padding(8.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .background(Color.Transparent)
+                            ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(bottom = 24.dp)
+                                    .background(Color.Transparent),
+                                verticalArrangement = Arrangement.spacedBy(18.dp)
+                            ) {
+                                Text(
+                                    text = "HUMIDITY",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.White
+                                )
+
+                                Text(
+                                    text = "${weatherInfo.main.humidity}%",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.White
+                                )
+                            }
+
                         }
                     }
 
@@ -438,12 +508,30 @@ fun WeatherDetailsContent(
                             ),
                         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
-                        Box(modifier = Modifier.padding(totalHeight * 0.1f)) {
-                            Text(
-                                text = "Wind: ${weatherInfo.wind.speed}m/s",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White
-                            )
+                        Box(modifier = Modifier
+                            .padding(8.dp)
+                            .align(Alignment.CenterHorizontally)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(bottom = 24.dp),
+                                verticalArrangement = Arrangement.spacedBy(18.dp)
+                            ) {
+                                Text(
+                                    text = "WIND",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center,
+                                )
+
+                                Text(
+                                    text = "${weatherInfo.wind.speed}m/s",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
                         }
                     }
                 }
@@ -457,62 +545,68 @@ fun WeatherDetailsContent(
         Column (
             modifier = Modifier
                 .padding(bottom = 20.dp, start = 16.dp, end = 16.dp)
-                .background(Color.Transparent)
+                .background(Color.Transparent),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
             Text(
                 text = "RECOMMENDED ACTIVITIES",
-
-                style = MaterialTheme.typography.displaySmall,
+                style = MaterialTheme.typography.labelLarge,
                 color = Color.White,
                 textAlign = TextAlign.Center
 
             )
-            if (!activitiesList.isEmpty()){
+            if (!activities.isEmpty()){
+                var width = (LocalConfiguration.current.screenWidthDp.dp)
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .background(Color.Black.copy(alpha = 0.3f))
+                        .width(width)
+                        .padding(top = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     for (i in 0 until 3) {
                         Row(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
                         ) {
                             for (j in 0 until 2) {
                                 val index = i * 2 + j
-                                if (index < activitiesList.size) {
+                                if (index < activities.size) {
                                     ActivityCard(
-                                        activity = activitiesList[index],
+                                        activity = activities[index],
                                         onClick = {
-                                            selectedActivity = activitiesList[index]
+                                            selectedActivity = activities[index]
                                             isDetailsDialog = true
-                                        }
+                                        },
                                     )
                                 }
                             }
                         }
                     }
                 }
-            } else {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                        .background(Color.Transparent),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    items(recommendedActivities.size) {
-                            index ->  ActivityCard(
-                        recommendedActivities[index],
-                        onClick = {
-                            isDetailsDialog = true
-                        }
-                    )
-                    }
-                }
             }
+
+//            else {
+//                LazyRow(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(top = 8.dp)
+//                        .background(Color.Transparent),
+//                    horizontalArrangement = Arrangement.SpaceBetween
+//                ) {
+//                    items(recommendedActivities.size) {
+//                            index ->  ActivityCard(
+//                        recommendedActivities[index],
+//                        onClick = {
+//                            isDetailsDialog = true
+//                        }
+//                    )
+//                    }
+//                }
+//            }
         }
-        
+
         if (isDetailsDialog && selectedActivity != null) {
             ShowActivitiesDetailsDialog(
                 activity = selectedActivity!!,
@@ -578,83 +672,34 @@ fun ShowActivitiesDetailsDialog(
     properties: Activity?= null,
     content: () -> Unit) {
 
-    AnimatedVisibility(
-        visible = isVisible,
-        enter = slideInVertically(
-            initialOffsetY = { it }, // small slide 300px
-            animationSpec = tween(
-                durationMillis = 300,
-                easing = LinearEasing // interpolator
-            )
-        ),
-        exit = slideOutVertically (
-            targetOffsetY = { it },
-            animationSpec = tween(
-                durationMillis = 300,
-                easing = LinearEasing
-            )
-        )
-    ){
-        var offsetY by remember { mutableStateOf(0f) }
-        var scrollState = rememberScrollState()
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn((LocalConfiguration.current.screenHeightDp.dp) / 4 * 4)
-                .offset { IntOffset(0, offsetY.toInt()) }
-                .pointerInput(Unit) {
-                    detectDragGestures { change, dragAmount ->
-                        change.consume()
-                        offsetY += dragAmount.y
-                        if (offsetY < 0f) offsetY = 0f
-                    }
-                }
-                .background(Color.Gray.copy(alpha = 0.2f)),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-
+    if (isVisible) {
+        Dialog(onDismissRequest = onDismissRequest) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(24.dp)
-                    .padding(vertical = 8.dp)
-                    .align(Alignment.CenterHorizontally)
-            ){
-                Text(
-                    text = "^",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxHeight(0.5f) // Set the height to half the screen height
+                    .background(Color.White, shape = RoundedCornerShape(16.dp))
+                    .padding(16.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    IconButton(onClick = {
-                        onDismissRequest()
-
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = "Close"
-                        )
-                    }
-                }
                 Column(
-                    modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(onClick = onDismissRequest) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Close"
+                            )
+                        }
+                    }
                     Text(
                         text = activity.location,
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center
                     )
-
                     Text(
                         text = activity.description,
                         style = MaterialTheme.typography.bodyMedium,
@@ -663,9 +708,7 @@ fun ShowActivitiesDetailsDialog(
                 }
             }
         }
-
-    }
-
+        }
 }
 
 // Reusable Activity Card
@@ -674,13 +717,14 @@ fun ActivityCard(
     activity: ActivitiesItem,
     onClick: () -> Unit
 ) {
-    
+    var width = (LocalConfiguration.current.screenWidthDp.dp) / 2
     Card(
         modifier = Modifier
-            .width((LocalConfiguration.current.screenWidthDp.dp)/2)
+            .width(width)
             .height(120.dp)
             .background(Color.Transparent)
             .clickable(onClick = onClick)
+            .padding(8.dp)
             .border(
             border = BorderStroke(1.dp, color = Color.White),
                 shape = RoundedCornerShape(10.dp)
@@ -689,7 +733,8 @@ fun ActivityCard(
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.3f))
         ) {
             Text(
@@ -720,8 +765,8 @@ fun WeatherInfo(label: String, value: String) {
     }
 }
 
-fun getWeatherBackground(weather: String) {
-    when (weather) {
+fun getWeatherBackground(weather: String): Int {
+    return when (weather) {
         "clear" -> R.drawable.weather_clear
         "cloudy" -> R.drawable.weather_cloud_4
         "clouds", "few cloud", "partial cloud" -> R.drawable.weather_cloud_4

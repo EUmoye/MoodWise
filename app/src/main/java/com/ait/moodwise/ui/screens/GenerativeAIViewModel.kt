@@ -8,9 +8,12 @@ import androidx.lifecycle.ViewModel
 import com.ait.moodwise.data.activity.Activities
 import com.ait.moodwise.data.activity.ActivitiesItem
 import com.google.ai.client.generativeai.GenerativeModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
-class GenAIViewModel: ViewModel() {
+@HiltViewModel
+class GenAIViewModel @Inject constructor() : ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun json_no_schema(cityCountry: String): List<ActivitiesItem>{
         var activities = { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
