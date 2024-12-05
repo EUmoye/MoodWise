@@ -72,7 +72,7 @@ maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = 
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 generativeai = {group="com.google.ai.client.generativeai", name="generativeai", version.ref="generativeai"}
-
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version = "6.0.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

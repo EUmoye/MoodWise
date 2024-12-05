@@ -1,43 +1,59 @@
 package com.ait.moodwise.ui.navigation
 
+import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.ait.moodwise.ui.screens.MapAnimation
-import com.ait.moodwise.ui.screens.WeatherDetails
+import com.ait.moodwise.ui.screens.location.LocationContent
+import com.ait.moodwise.ui.screens.location.MapViewModel
+import com.ait.moodwise.ui.screens.location.RequestPermission
 import com.ait.moodwise.ui.screens.music.MusicScreen
+import com.ait.moodwise.ui.screens.weather.WeatherDetails
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 
-//sealed class MainNavigation(val route: String) {
-//    object MainScreen : MainNavigation("mainscreen")
-//
-//    object MoodTracker : MainNavigation("moodtracker")
-//
-//}
 
+
+@OptIn(ExperimentalPermissionsApi::class)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainNavigation() {
-    val navController = rememberNavController()
+fun MainNavigation(
+    navController: NavHostController
+) {
+    val currentTime = remember { mutableStateOf(System.currentTimeMillis()) }
+    val mapViewModel: MapViewModel = hiltViewModel()
 
     NavHost(
         navController = navController,
-        startDestination = "music"
+        startDestination = "Music"
     ) {
-        // Weather Details Screen
-        composable(route = "weather_details") {
-            WeatherDetails(viewModel = hiltViewModel())
+        composable(route = "Weather") {
+            WeatherDetails(mapViewModel)
         }
 
-        // Map Animation Screen
-        composable(route = "map") {
-            MapAnimation()
-        }
-
-        // Music screen
-        composable(route = "music") {
+        composable(route = "Music") {
             MusicScreen()
         }
 
+        composable(route = "Home") {
+
+            // Map Animation Screen
+            composable(route = "map") {
+                val context = LocalContext.current
+                RequestPermission(permission = Manifest.permission.ACCESS_FINE_LOCATION) {
+                    LocationContent(
+                        context = context,
+                        navController = navController,
+                        viewModel = mapViewModel
+                    )
+                }
+            }
+        }
     }
 }

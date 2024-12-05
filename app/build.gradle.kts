@@ -109,11 +109,13 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
 
-//    implementation ('com.spotify.sdk.android:spotify-app-remote:2.10.0')
-//    implementation ('com.spotify.sdk.android:spotify-auth:2.1.0')
-//    implementation project(':spotify-app-remote')
     implementation ("com.google.code.gson:gson:2.6.1")
+
+    //gemini
     implementation(libs.generativeai)
+
+    // animation
+    implementation(libs.lottie.compose)
 
 
 

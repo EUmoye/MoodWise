@@ -1,0 +1,84 @@
+  // City Description
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+            .padding(bottom = 20.dp, start = 16.dp, end = 16.dp)
+            .background(Color.Black.copy(alpha = 0.3f))
+                .border(
+                    border = BorderStroke(1.dp, color = Color.White),
+                    shape = RoundedCornerShape(10.dp)
+
+                ),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)
+                .background(Color.Transparent)
+            ) {
+                Text(
+                    text = "CITY DESCRIPTION",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White
+                )
+                Text(
+                    text = "Cloudiness: ${weatherInfo.clouds.all}%",
+                    style = MaterialTheme.typography.labelMedium,
+                            color = Color.White
+                )
+                Text(
+                    text = "Wind Speed: ${weatherInfo.wind.speed}m/s",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White
+
+                )
+            }
+        }
+
+        // Stats Section
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+            .padding(bottom = 20.dp, start = 16.dp, end = 16.dp),
+
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            val boxWidth = (LocalConfiguration.current.screenWidthDp.dp) / 2
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(80.dp)
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .border(
+                        border = BorderStroke(1.dp, Color.White),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .padding(8.dp),
+
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Humidity: ${weatherInfo.main.humidity}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+
+            }
+            Box(
+                modifier = Modifier
+                    .width(boxWidth)
+                    .height(80.dp)
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .border(
+                        border = BorderStroke(1.dp, Color.White),
+                        shape = RoundedCornerShape(10.dp)
+                    ),
+//                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text ="Pressure: ${weatherInfo.main.pressure} hPa",
+                    style = MaterialTheme.typography.bodyMedium,
+                color = Color.White
+                )
+            }
+        }

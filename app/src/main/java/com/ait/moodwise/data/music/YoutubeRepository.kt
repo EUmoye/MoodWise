@@ -8,7 +8,7 @@ import java.net.URL
 
 class YouTubeRepository {
 
-    private val apiKey = "AIzaSyAGy3uMnrDivcAI2Q5OGOMubVRiFgXR5xM"
+    private val apiKey = "AIzaSyA4Gv0Th6AP45VrYTck5EjOvwauFub2kjw"
 
     suspend fun searchYouTubeVideo(songName: String, artist: String): String? {
         return withContext(Dispatchers.IO) {

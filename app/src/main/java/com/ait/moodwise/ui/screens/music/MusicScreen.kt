@@ -248,16 +248,16 @@ fun SongCard(song: Song, onClick: () -> Unit) {
 fun getMoodGradient(mood: String): List<Color> {
     return when (mood) {
         "Happy" -> listOf(Color(0xFFFFF59D), Color(0xFFFFCC80))
-        "Sad" -> listOf(Color(0xFF90CAF9), Color(0xFF42A5F5))
-        "Relaxed" -> listOf(Color(0xFFA5D6A7), Color(0xFF81C784))
-        "Energetic" -> listOf(Color(0xFFFFA726), Color(0xFFFF7043))
-        "Calm" -> listOf(Color(0xFFCE93D8), Color(0xFFBA68C8))
-        "Focus" -> listOf(Color(0xFFB0BEC5), Color(0xFF78909C))
-        "Chill" -> listOf(Color(0xFFB3E5FC), Color(0xFF81D4FA))
-        "Angry" -> listOf(Color(0xFFF37198), Color(0xFFEF5350))
+        "Sad" -> listOf(Color(0xFFBACDE5), Color(0xFF42A5F5))
+        "Relaxed" -> listOf(Color(0xFFC8E1C9), Color(0xFF81C784))
+        "Energetic" -> listOf(Color(0xFFF6CA87), Color(0xFFFF7043))
+        "Calm" -> listOf(Color(0xFFFCFAFD), Color(0xFFBA68C8))
+        "Focus" -> listOf(Color(0xFFD9ECF5), Color(0xFF78909C))
+        "Chill" -> listOf(Color(0xFFDEF0F8), Color(0xFF81D4FA))
+        "Angry" -> listOf(Color(0xFFEFBFCB), Color(0xFFEF5350))
         "Bored" -> listOf(Color(0xFFE0E0E0), Color(0xFFBDBDBD))
-        "Excited" -> listOf(Color(0xFFF6A7A7), Color(0xFFFFABAB))
-        else -> listOf(Color(0xFFBBDEFB), Color(0xFF90CAF9))
+        "Excited" -> listOf(Color(0xFFF8D9D9), Color(0xFFFFABAB))
+        else -> listOf(Color(0xFFDBEEF1), Color(0xFF90CAF9))
     }
 }
 
@@ -266,16 +266,16 @@ fun getMoodGradient(mood: String): List<Color> {
 fun MoodHeader(weather: String, mood: String) {
     val gradientColors = when (mood) {
         "Happy" -> listOf(Color(0xFFFFF59D), Color(0xFFFFCC80))
-        "Sad" -> listOf(Color(0xFF90CAF9), Color(0xFF42A5F5))
-        "Relaxed" -> listOf(Color(0xFFA5D6A7), Color(0xFF81C784))
-        "Energetic" -> listOf(Color(0xFFFFA726), Color(0xFFFF7043))
-        "Calm" -> listOf(Color(0xFFCE93D8), Color(0xFFBA68C8))
-        "Focus" -> listOf(Color(0xFFB0BEC5), Color(0xFF78909C))
-        "Chill" -> listOf(Color(0xFFB3E5FC), Color(0xFF81D4FA))
-        "Angry" -> listOf(Color(0xFFF37198), Color(0xFFEF5350))
+        "Sad" -> listOf(Color(0xFFBACDE5), Color(0xFF42A5F5))
+        "Relaxed" -> listOf(Color(0xFFC8E1C9), Color(0xFF81C784))
+        "Energetic" -> listOf(Color(0xFFF6CA87), Color(0xFFFF7043))
+        "Calm" -> listOf(Color(0xFFFCFAFD), Color(0xFFBA68C8))
+        "Focus" -> listOf(Color(0xFFD9ECF5), Color(0xFF78909C))
+        "Chill" -> listOf(Color(0xFFDEF0F8), Color(0xFF81D4FA))
+        "Angry" -> listOf(Color(0xFFEFBFCB), Color(0xFFEF5350))
         "Bored" -> listOf(Color(0xFFE0E0E0), Color(0xFFBDBDBD))
-        "Excited" -> listOf(Color(0xFFF6A7A7), Color(0xFFFFABAB))
-        else -> listOf(Color(0xFFBBDEFB), Color(0xFF90CAF9))
+        "Excited" -> listOf(Color(0xFFF8D9D9), Color(0xFFFFABAB))
+        else -> listOf(Color(0xFFDBEEF1), Color(0xFF90CAF9))
     }
 
     Box(
