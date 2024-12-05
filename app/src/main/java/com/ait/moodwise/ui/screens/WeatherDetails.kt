@@ -151,11 +151,6 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
                 apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
             )
 
-//            try {
-//                activitiesList = genAIViewModel.json_no_schema(cityCountry)
-//            } catch (e: Exception) {
-//                Log.d("WeatherDetails", "Failed to get activities")
-//            }
         }
     }
 
@@ -168,6 +163,10 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
 
     LaunchedEffect(cityCountry) {
         genAIViewModel.fetchActivities(cityCountry)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.startPeriodicUpdates(cityCountry, "3b3fb7a3dda7a0a2788ae82328224214")
     }
 
     Box(
