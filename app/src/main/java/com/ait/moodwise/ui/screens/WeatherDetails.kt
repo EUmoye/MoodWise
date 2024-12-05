@@ -50,6 +50,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -132,7 +133,7 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
     val location by mapViewModel.locationState
     val context = LocalContext.current
     var cityCountry by rememberSaveable { mutableStateOf("New York") }
-    var activitiesList by rememberSaveable { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
+    val activitiesList by genAIViewModel.activitiesList.collectAsState()
     var initialTimeInMillis by rememberSaveable { mutableStateOf(0L) }
     var localTime by rememberSaveable { mutableStateOf("") }
     var bcgImg by rememberSaveable { mutableStateOf(R.drawable.weather_clear) }
@@ -150,40 +151,25 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
                 apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
             )
 
-            activitiesList = genAIViewModel.json_no_schema(cityCountry) // Have a state in the genaiviewmodel that holds
-            // the activities list. similar to what was done for the location
-        }
-    }
-
-
-    if (weatherInfo != null && initialTimeInMillis == 0L) {
-        initialTimeInMillis = (weatherInfo.dt + weatherInfo.timezone) * 1000L
-        localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
-    }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(60000) // Wait for 1 minute
-            initialTimeInMillis += 60000 // Increment by 1 minute
-            localTime = SimpleDateFormat("yyyy-MMMM-dd HH:mm", Locale.getDefault()).format(Date(initialTimeInMillis))
+//            try {
+//                activitiesList = genAIViewModel.json_no_schema(cityCountry)
+//            } catch (e: Exception) {
+//                Log.d("WeatherDetails", "Failed to get activities")
+//            }
         }
     }
 
     LaunchedEffect(weatherInfo) {
-        if (weatherInfo != null) {
-            Log.d("rebuilding the weather info", weatherInfo.toString())
-
-            initialTimeInMillis = (weatherInfo.dt + weatherInfo.timezone) * 1000L
-            Log.d("initialtime in millis", initialTimeInMillis.toString())
-            localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
-            activitiesList = genAIViewModel.json_no_schema(cityCountry) //TODO I think city country isnt updated
-            Log.d("cityCountry", cityCountry)
-            Log.d("cityCountry", cityCountry)
-            bcgImg = getWeatherBackground(weatherInfo.weather[0].main.lowercase())
-            Log.d("main weather", "${weatherInfo.weather[0].main}")
-            Log.d("bcgImg", bcgImg.toString())
+        weatherInfo?.let {
+            bcgImg = getWeatherBackground(it.weather[0].main.lowercase())
+            localTime = viewModel.getLocalTime(it.dt, it.timezone)
         }
     }
+
+    LaunchedEffect(cityCountry) {
+        genAIViewModel.fetchActivities(cityCountry)
+    }
+
     Box(
             modifier =  Modifier.fillMaxSize()
     ) {
@@ -218,7 +204,9 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
                             cityCountry = cityCountry,
                             currentTime = currentTime.value,
                             activities = activitiesList,
-                            viewModel = viewModel
+                            viewModel = viewModel,
+                            onCityCountryChange = { newCityContry ->
+                                cityCountry = newCityContry }
                         )
                     }
                 }
@@ -244,7 +232,8 @@ fun WeatherDetailsContent(
     cityCountry: String,
     currentTime: Long,
     activities: List<ActivitiesItem>,
-    viewModel: WeatherDetailsViewModel
+    viewModel: WeatherDetailsViewModel,
+    onCityCountryChange: (String) -> Unit
 
 ) {
 
@@ -274,7 +263,7 @@ fun WeatherDetailsContent(
                 onQueryChanged = { searchQuery = it},
                 onSearch = {
                     if (searchQuery.isNotBlank()) {
-                        cityCountry = searchQuery
+                        onCityCountryChange(searchQuery)
                         viewModel.getWeatherDetails(
                             cityCountry = searchQuery,
                             apiKey = "3b3fb7a3dda7a0a2788ae82328224214"

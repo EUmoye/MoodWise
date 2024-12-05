@@ -5,15 +5,35 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ait.moodwise.data.activity.Activities
 import com.ait.moodwise.data.activity.ActivitiesItem
 import com.google.ai.client.generativeai.GenerativeModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 @HiltViewModel
 class GenAIViewModel @Inject constructor() : ViewModel() {
+
+    private val _activitiesList = MutableStateFlow<List<ActivitiesItem>>(emptyList())
+    val activitiesList: StateFlow<List<ActivitiesItem>> = _activitiesList
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun fetchActivities(cityCountry: String) {
+        viewModelScope.launch {
+            try {
+                val activities = json_no_schema(cityCountry)
+                _activitiesList.value = activities
+            } catch (e: Exception) {
+                Log.d("GenAIViewModel", "Failed to fetch activities: ${e.message}")
+            }
+        }
+    }
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun json_no_schema(cityCountry: String): List<ActivitiesItem>{
         var activities = { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
