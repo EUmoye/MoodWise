@@ -767,7 +767,6 @@ fun WeatherInfo(label: String, value: String) {
 }
 
 fun getWeatherBackground(weather: String): Int {
-    Log.d("weather", weather)
     return when (weather) {
         "clear" -> R.drawable.weather_clear
         "cloudy" -> R.drawable.weather_cloud_4
