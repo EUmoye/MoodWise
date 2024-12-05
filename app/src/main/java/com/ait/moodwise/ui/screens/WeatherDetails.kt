@@ -171,20 +171,19 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
 
     LaunchedEffect(weatherInfo) {
         if (weatherInfo != null) {
+            Log.d("rebuilding the weather info", weatherInfo.toString())
+
             initialTimeInMillis = (weatherInfo.dt + weatherInfo.timezone) * 1000L
+            Log.d("initialtime in millis", initialTimeInMillis.toString())
             localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
             activitiesList = genAIViewModel.json_no_schema(cityCountry) //TODO I think city country isnt updated
-            bcgImg = getWeatherBackground(weatherInfo.weather[0].main)
+            Log.d("cityCountry", cityCountry)
+            Log.d("cityCountry", cityCountry)
+            bcgImg = getWeatherBackground(weatherInfo.weather[0].main.lowercase())
+            Log.d("main weather", "${weatherInfo.weather[0].main}")
+            Log.d("bcgImg", bcgImg.toString())
         }
     }
-//    LaunchedEffect(cityCountry) {
-//        activitiesList = genAIViewModel.json_no_schema(cityCountry)
-//    }
-
-    if (weatherInfo != null) {
-        Log.d("main", "main: ${weatherInfo.weather[0].main}")
-    }
-Log.d("bcg", "bcgImg: $bcgImg")
     Box(
             modifier =  Modifier.fillMaxSize()
     ) {
@@ -275,6 +274,7 @@ fun WeatherDetailsContent(
                 onQueryChanged = { searchQuery = it},
                 onSearch = {
                     if (searchQuery.isNotBlank()) {
+                        cityCountry = searchQuery
                         viewModel.getWeatherDetails(
                             cityCountry = searchQuery,
                             apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
@@ -778,6 +778,7 @@ fun WeatherInfo(label: String, value: String) {
 }
 
 fun getWeatherBackground(weather: String): Int {
+    Log.d("weather", weather)
     return when (weather) {
         "clear" -> R.drawable.weather_clear
         "cloudy" -> R.drawable.weather_cloud_4
