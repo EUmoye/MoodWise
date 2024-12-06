@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
                         hasNews = false
                     ),
                     BottomNavItem(
-                        title = "Weather",
+                        title = "Music",
                         selectedIcon = Icons.Filled.LocationOn,
                         unselectedIcon = Icons.Sharp.LocationOn,
                         hasNews = false
