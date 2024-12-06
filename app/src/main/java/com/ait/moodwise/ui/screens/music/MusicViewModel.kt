@@ -90,7 +90,7 @@ class MusicViewModel(
 
 data class MusicUiState(
     val mood: String = "Sad",
-    val weather: String = "Cloudy",
+    val weather: String = "Clear",
     val songs: List<Song> = emptyList(),
     val isLoading: Boolean = false
 )

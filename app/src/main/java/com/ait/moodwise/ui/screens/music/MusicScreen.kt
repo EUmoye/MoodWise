@@ -16,10 +16,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,28 +37,21 @@ fun MusicScreen(viewModel: MusicViewModel = viewModel()) {
     Scaffold(
         floatingActionButton = {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(end = 16.dp, bottom = 80.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.End
             ) {
-//                FloatingActionButton(
-//                    onClick = {
-//                        viewModel.updateMood(moods.random())
-//                        viewModel.generateNewSongs()
-//                    },
-//                    containerColor = Color(0xFFEF5350),
-//                    contentColor = Color.White
-//                ) {
-//                    Icon(Icons.Default.FavoriteBorder, contentDescription = "Feeling Lucky")
-//                }
-
                 FloatingActionButton(
-                    onClick = { viewModel.generateNewSongs() },
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    onClick = {
+                        viewModel.updateMood(moods.random())
+                        viewModel.generateNewSongs()
+                    },
+                    containerColor = Color(0xFFEF5350),
                     contentColor = Color.White
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Generate New Songs")
+                    Icon(Icons.Default.FavoriteBorder, contentDescription = "Feeling Lucky")
                 }
+
             }
         },
         content = { padding ->
