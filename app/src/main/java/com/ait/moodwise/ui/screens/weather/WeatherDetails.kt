@@ -3,18 +3,11 @@ package com.ait.moodwise.ui.screens.weather
 import android.annotation.SuppressLint
 import android.location.Geocoder
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,12 +17,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,10 +40,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,40 +52,36 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ait.moodwise.R
 import com.ait.moodwise.data.activity.ActivitiesItem
 import com.ait.moodwise.data.activity.Activity
 import com.ait.moodwise.data.weather.weatherInfo
 import com.ait.moodwise.ui.screens.location.MapViewModel
 import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlin.math.roundToInt
 
 @Composable
 fun WeatherAnimation() {
     val animations = listOf(
         "rain_animation.json",
-        "sun_animation.json",
+        "sun.json",
         "snow_animation.json",
         "cloud_animation.json"
     )
@@ -132,7 +118,7 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
     val location by mapViewModel.locationState
     val context = LocalContext.current
     var cityCountry by rememberSaveable { mutableStateOf("New York") }
-    var activitiesList by rememberSaveable { mutableStateOf<List<ActivitiesItem>>(emptyList()) }
+    val activitiesList by genAIViewModel.activitiesList.collectAsState()
     var initialTimeInMillis by rememberSaveable { mutableStateOf(0L) }
     var localTime by rememberSaveable { mutableStateOf("") }
     var bcgImg by rememberSaveable { mutableStateOf(R.drawable.weather_clear) }
@@ -150,41 +136,35 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
                 apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
             )
 
-            activitiesList = genAIViewModel.json_no_schema(cityCountry) // Have a state in the genaiviewmodel that holds
-            // the activities list. similar to what was done for the location
-        }
-    }
-
-
-    if (weatherInfo != null && initialTimeInMillis == 0L) {
-        initialTimeInMillis = (weatherInfo.dt + weatherInfo.timezone) * 1000L
-        localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
-    }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(60000) // Wait for 1 minute
-            initialTimeInMillis += 60000 // Increment by 1 minute
-            localTime = SimpleDateFormat("yyyy-MMMM-dd HH:mm", Locale.getDefault()).format(Date(initialTimeInMillis))
         }
     }
 
     LaunchedEffect(weatherInfo) {
-        if (weatherInfo != null) {
-            initialTimeInMillis = (weatherInfo.dt + weatherInfo.timezone) * 1000L
-            localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
-            activitiesList = genAIViewModel.json_no_schema(cityCountry) //TODO I think city country isnt updated
-            bcgImg = getWeatherBackground(weatherInfo.weather[0].main)
+//        if (weatherInfo == null) {
+//            viewModel.getWeatherDetails(
+//                cityCountry = "Budapest",
+//                apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
+//            )
+//        }
+//
+//        else {
+//            bcgImg = getWeatherBackground(weatherInfo.weather[0].main.lowercase())
+//            localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
+//        }
+        weatherInfo?.let {
+            bcgImg = getWeatherBackground(it.weather[0].main.lowercase())
+            localTime = viewModel.getLocalTime(it.dt, it.timezone)
         }
     }
-//    LaunchedEffect(cityCountry) {
-//        activitiesList = genAIViewModel.json_no_schema(cityCountry)
-//    }
 
-    if (weatherInfo != null) {
-        Log.d("main", "main: ${weatherInfo.weather[0].main}")
+    LaunchedEffect(cityCountry) {
+        genAIViewModel.fetchActivities(cityCountry)
     }
-    Log.d("bcg", "bcgImg: $bcgImg")
+
+    LaunchedEffect(Unit) {
+        viewModel.startPeriodicUpdates(cityCountry, "3b3fb7a3dda7a0a2788ae82328224214")
+    }
+
     Box(
         modifier =  Modifier.fillMaxSize()
     ) {
@@ -219,7 +199,9 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
                         cityCountry = cityCountry,
                         currentTime = currentTime.value,
                         activities = activitiesList,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onCityCountryChange = { newCityContry ->
+                            cityCountry = newCityContry }
                     )
                 }
             }
@@ -245,22 +227,16 @@ fun WeatherDetailsContent(
     cityCountry: String,
     currentTime: Long,
     activities: List<ActivitiesItem>,
-    viewModel: WeatherDetailsViewModel
+    viewModel: WeatherDetailsViewModel,
+    onCityCountryChange: (String) -> Unit
 
 ) {
-
-
-    var testModel: GenAIViewModel = hiltViewModel()
-    val coroutineScope = rememberCoroutineScope()
-    val mapViewModel: MapViewModel
     var isDetailsDialog by rememberSaveable { mutableStateOf(false) }
     var isDialogVisible by remember { mutableStateOf(false) }
     var selectedActivity by remember { mutableStateOf<ActivitiesItem?>(null) }
-//    var recommendedActivities = listOf(ActivitiesItem("sleep", "in budapest", "just sleep"))
     val scrollState = rememberScrollState()
     var showSearchBar by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
-
 
     Column(
         modifier = Modifier
@@ -268,13 +244,13 @@ fun WeatherDetailsContent(
             .padding(top = 80.dp, start = 20.dp, end = 20.dp)
             .verticalScroll(scrollState)
     ) {
-
         if (showSearchBar) {
             SearchBar(
                 query = searchQuery,
                 onQueryChanged = { searchQuery = it},
                 onSearch = {
                     if (searchQuery.isNotBlank()) {
+                        onCityCountryChange(searchQuery)
                         viewModel.getWeatherDetails(
                             cityCountry = searchQuery,
                             apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
@@ -799,6 +775,8 @@ fun getWeatherBackground(weather: String): Int {
 
     }
 }
+
+
 
 
 

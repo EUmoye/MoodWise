@@ -43,16 +43,16 @@ fun MusicScreen(viewModel: MusicViewModel = viewModel()) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.End
             ) {
-                FloatingActionButton(
-                    onClick = {
-                        viewModel.updateMood(moods.random())
-                        viewModel.generateNewSongs()
-                    },
-                    containerColor = Color(0xFFEF5350),
-                    contentColor = Color.White
-                ) {
-                    Icon(Icons.Default.FavoriteBorder, contentDescription = "Feeling Lucky")
-                }
+//                FloatingActionButton(
+//                    onClick = {
+//                        viewModel.updateMood(moods.random())
+//                        viewModel.generateNewSongs()
+//                    },
+//                    containerColor = Color(0xFFEF5350),
+//                    contentColor = Color.White
+//                ) {
+//                    Icon(Icons.Default.FavoriteBorder, contentDescription = "Feeling Lucky")
+//                }
 
                 FloatingActionButton(
                     onClick = { viewModel.generateNewSongs() },

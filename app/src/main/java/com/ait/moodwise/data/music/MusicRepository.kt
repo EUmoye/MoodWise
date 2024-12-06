@@ -17,7 +17,7 @@ class MusicRepository {
     suspend fun fetchSongs(weather: String, mood: String): List<Song> = withContext(Dispatchers.IO) {
         val prompt = """
             Based on the current weather being "$weather" and the mood being "$mood",
-            suggest a good list of songs to listen to. 
+            suggest a good comprehensive list of songs to listen to that would be suitable for this mood.
             Provide the response in this JSON format:
             [
                 {"name": "Song Name", "artist": "Artist Name"}

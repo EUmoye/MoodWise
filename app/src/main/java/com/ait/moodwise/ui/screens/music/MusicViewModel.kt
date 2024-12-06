@@ -1,5 +1,4 @@
 package com.ait.moodwise.ui.screens.music
-
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -8,10 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ait.moodwise.data.music.MusicRepository
 import com.ait.moodwise.data.music.YouTubeRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-
 
 class MusicViewModel(
     private val musicRepository: MusicRepository = MusicRepository(),
@@ -23,6 +20,10 @@ class MusicViewModel(
 
     init {
         generateNewSongs()
+    }
+
+    fun updateSongList(newSongs: List<Song>) {
+        _uiState.value = _uiState.value.copy(songs = newSongs)
     }
 
     fun updateMood(newMood: String) {
@@ -47,13 +48,16 @@ class MusicViewModel(
         context.startActivity(intent)
     }
 
+    suspend fun fetchSongsFromAPI() {
+        val fetchedSongs = musicRepository.fetchSongs("Clear", "Sad")
+        _uiState.value = _uiState.value.copy(songs = fetchedSongs)
+    }
+
     private fun fetchSongs(weather: String, mood: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
                 val geminiSongs = musicRepository.fetchSongs(weather, mood)
-                println(geminiSongs)
-
                 val updatedSongs = geminiSongs.mapNotNull { geminiSong ->
                     val youtubeLink = youtubeRepository.searchYouTubeVideo(geminiSong.title, geminiSong.artist)
                     Log.d("MusicViewModel", "Youtube Link: $youtubeLink")
@@ -84,11 +88,9 @@ class MusicViewModel(
     }
 }
 
-
-
 data class MusicUiState(
     val mood: String = "Sad",
-    val weather: String = "Clear",
+    val weather: String = "Cloudy",
     val songs: List<Song> = emptyList(),
     val isLoading: Boolean = false
 )

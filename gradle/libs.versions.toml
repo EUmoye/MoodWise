@@ -19,6 +19,9 @@ androidxHilt = "1.2.0"
 playServicesAi = "18.4.0"
 retrofit="2.9.0"
 kotlinxSerialization="1.4.0"
+roomCompiler = "2.5.2"
+roomKtx = "2.5.0"
+roomRuntime = "2.6.1"
 serializationConverter="0.8.0"
 serialization="1.8.0"
 coil="2.1.0"
@@ -36,6 +39,9 @@ playServicesLocation = "21.3.0"
 [libraries]
 accompanist-permissions-v0312alpha = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenvKotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

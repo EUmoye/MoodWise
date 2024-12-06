@@ -117,6 +117,14 @@ dependencies {
     // animation
     implementation(libs.lottie.compose)
 
+    // Room database
+    implementation (libs.androidx.room.runtime)
+    kapt( libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
+    // Optional - for Kotlin coroutines support
+//    implementation "androidx.room:room-ktx:2.5.2"
+
 
 
 }
