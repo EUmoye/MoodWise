@@ -96,7 +96,7 @@ import kotlin.math.roundToInt
 fun WeatherAnimation() {
     val animations = listOf(
         "rain_animation.json",
-        "sun_animation.json",
+        "sun.json",
         "snow_animation.json",
         "cloud_animation.json"
     )
@@ -155,6 +155,17 @@ fun WeatherDetails(mapViewModel: MapViewModel) {
     }
 
     LaunchedEffect(weatherInfo) {
+//        if (weatherInfo == null) {
+//            viewModel.getWeatherDetails(
+//                cityCountry = "Budapest",
+//                apiKey = "3b3fb7a3dda7a0a2788ae82328224214"
+//            )
+//        }
+//
+//        else {
+//            bcgImg = getWeatherBackground(weatherInfo.weather[0].main.lowercase())
+//            localTime = viewModel.getLocalTime(weatherInfo.dt, weatherInfo.timezone)
+//        }
         weatherInfo?.let {
             bcgImg = getWeatherBackground(it.weather[0].main.lowercase())
             localTime = viewModel.getLocalTime(it.dt, it.timezone)
@@ -235,19 +246,12 @@ fun WeatherDetailsContent(
     onCityCountryChange: (String) -> Unit
 
 ) {
-
-
-    var testModel: GenAIViewModel = hiltViewModel()
-    val coroutineScope = rememberCoroutineScope()
-    val mapViewModel: MapViewModel
     var isDetailsDialog by rememberSaveable { mutableStateOf(false) }
     var isDialogVisible by remember { mutableStateOf(false) }
     var selectedActivity by remember { mutableStateOf<ActivitiesItem?>(null) }
-//    var recommendedActivities = listOf(ActivitiesItem("sleep", "in budapest", "just sleep"))
     val scrollState = rememberScrollState()
     var showSearchBar by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
-
 
     Column(
         modifier = Modifier
@@ -255,7 +259,6 @@ fun WeatherDetailsContent(
             .padding(top = 80.dp, start = 20.dp, end = 20.dp)
             .verticalScroll(scrollState)
     ) {
-
         if (showSearchBar) {
             SearchBar(
                 query = searchQuery,

@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ait.moodwise.MainActivity
+import com.ait.moodwise.ui.screens.SplashScreen
 import com.ait.moodwise.ui.screens.WeatherDetails
 //import com.ait.moodwise.ui.screens.WeatherDetails
 import com.ait.moodwise.ui.screens.WeatherDetailsContent
@@ -33,8 +34,12 @@ fun MainNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = "map"
+        startDestination = "splash_screen"
     ) {
+
+        composable(route = "splash_screen") {
+            SplashScreen(navController)
+        }
         composable(route = "Weather") {
             WeatherDetails(mapViewModel)
         }
